@@ -330,34 +330,22 @@ function Component() {
 
 ## Forms
 
-### Text Fields
-
 ```typescript
-import { TextField } from '@mui/material';
+import { TextField, Stack, Button } from '@mui/material';
 
-<TextField
-  label="Email"
-  type="email"
-  value={email}
-  onChange={(e) => setEmail(e.target.value)}
-  fullWidth
-  required
-  error={!!errors.email}
-  helperText={errors.email}
-/>
-```
-
-### Form Layout
-
-```typescript
 <Box component="form" onSubmit={handleSubmit}>
   <Stack spacing={2}>
-    <TextField label="Name" fullWidth />
-    <TextField label="Email" type="email" fullWidth />
-    <TextField label="Message" multiline rows={4} fullWidth />
-    <Button type="submit" variant="contained">
-      Submit
-    </Button>
+    <TextField
+      label="Email"
+      type="email"
+      value={email}
+      onChange={(e) => setEmail(e.target.value)}
+      fullWidth
+      required
+      error={!!errors.email}
+      helperText={errors.email}
+    />
+    <Button type="submit" variant="contained">Submit</Button>
   </Stack>
 </Box>
 ```
@@ -453,25 +441,11 @@ function Component() {
 ## Icons
 
 ```typescript
-import {
-  Add as AddIcon,
-  Delete as DeleteIcon,
-  Edit as EditIcon,
-  Check as CheckIcon,
-} from '@mui/icons-material';
+import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { Button, IconButton } from '@mui/material';
 
-// In buttons
 <Button startIcon={<AddIcon />}>Add</Button>
-
-// In icon buttons
-import { IconButton } from '@mui/material';
-
-<IconButton onClick={handleDelete}>
-  <DeleteIcon />
-</IconButton>
-
-// Standalone
-<AddIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+<IconButton onClick={handleDelete}><DeleteIcon /></IconButton>
 ```
 
 ---
