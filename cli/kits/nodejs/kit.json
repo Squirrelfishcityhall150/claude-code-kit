@@ -1,0 +1,11 @@
+{
+  "name": "nodejs",
+  "displayName": "Node.js",
+  "description": "Core Node.js backend patterns with TypeScript and layered architecture",
+  "detect": {
+    "command": "grep -q '\"type\".*:.*\"module\"\\|\"typescript\"' package.json && grep -q '\"express\"\\|\"fastify\"\\|\"hono\"' package.json"
+  },
+  "provides": {
+    "skills": ["nodejs"]
+  }
+}

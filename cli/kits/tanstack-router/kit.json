@@ -1,0 +1,11 @@
+{
+  "name": "tanstack-router",
+  "displayName": "TanStack Router",
+  "description": "TanStack Router file-based routing with type-safe navigation",
+  "detect": {
+    "command": "grep -q '@tanstack/react-router' package.json"
+  },
+  "provides": {
+    "skills": ["tanstack-router"]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "prisma",
+  "displayName": "Prisma",
+  "description": "Prisma ORM patterns for type-safe database access",
+  "detect": {
+    "command": "grep -q '@prisma/client' package.json || [ -f prisma/schema.prisma ]"
+  },
+  "provides": {
+    "skills": ["prisma"]
+  }
+}

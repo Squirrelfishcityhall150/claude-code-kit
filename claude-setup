@@ -12,7 +12,7 @@
 
 set -e  # Exit on error
 
-VERSION="0.1.0"
+VERSION="0.2.0"
 
 # Colors for output
 RED='\033[0;31m'
@@ -111,105 +111,109 @@ if [ -d ".claude" ]; then
     fi
 fi
 
-# Step 2: Detect package.json and frameworks
-echo -e "${BLUE}Detecting project structure...${NC}"
+# Step 2: Detect available kits
+echo -e "${BLUE}Detecting project frameworks...${NC}"
 echo ""
 
-HAS_PACKAGE_JSON=false
-HAS_REACT=false
-HAS_EXPRESS=false
-FRONTEND_DIR="src"
-BACKEND_DIR="src"
+# Discover all available kits
+declare -a ALL_KITS
+declare -a DETECTED_KITS
+declare -A KIT_DISPLAY_NAMES
 
-if [ -f "package.json" ]; then
-    HAS_PACKAGE_JSON=true
+if [ -d "$TEMPLATE_DIR/kits" ]; then
+    for kit_dir in "$TEMPLATE_DIR/kits"/*; do
+        if [ -d "$kit_dir" ] && [ -f "$kit_dir/kit.json" ]; then
+            kit_name=$(basename "$kit_dir")
 
-    # Detect React
-    if grep -q '"react"' package.json 2>/dev/null; then
-        HAS_REACT=true
-        echo -e "${GREEN}✓${NC} Detected: React"
-    fi
+            # All kits are now atomic
 
-    # Detect Express
-    if grep -q '"express"' package.json 2>/dev/null; then
-        HAS_EXPRESS=true
-        echo -e "${GREEN}✓${NC} Detected: Express"
-    fi
+            ALL_KITS+=("$kit_name")
 
-    # Detect common directories
-    if [ -d "frontend/src" ]; then
-        FRONTEND_DIR="frontend/src"
-    elif [ -d "client/src" ]; then
-        FRONTEND_DIR="client/src"
-    elif [ -d "src" ]; then
-        FRONTEND_DIR="src"
-    fi
-
-    if [ -d "backend/src" ]; then
-        BACKEND_DIR="backend/src"
-    elif [ -d "api/src" ]; then
-        BACKEND_DIR="api/src"
-    elif [ -d "server/src" ]; then
-        BACKEND_DIR="server/src"
-    elif [ -d "src" ]; then
-        BACKEND_DIR="src"
-    fi
+            # Extract display name using jq if available, otherwise use kit name
+            if command -v jq &> /dev/null; then
+                display_name=$(jq -r '.displayName // .name' "$kit_dir/kit.json" 2>/dev/null || echo "$kit_name")
+            else
+                display_name="$kit_name"
+            fi
+            KIT_DISPLAY_NAMES[$kit_name]="$display_name"
+        fi
+    done
 fi
 
-if [ "$HAS_REACT" = false ] && [ "$HAS_EXPRESS" = false ]; then
-    echo -e "${YELLOW}ℹ${NC} No frameworks detected (React or Express not in package.json)"
+# Detect which kits match the project
+for kit_name in "${ALL_KITS[@]}"; do
+    kit_json="$TEMPLATE_DIR/kits/$kit_name/kit.json"
+
+    if [ -f "$kit_json" ]; then
+        # Extract detect command
+        if command -v jq &> /dev/null; then
+            detect_cmd=$(jq -r '.detect.command // ""' "$kit_json" 2>/dev/null)
+        else
+            # Fallback: simple grep extraction
+            detect_cmd=$(grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' "$kit_json" | sed 's/.*"\([^"]*\)".*/\1/' || echo "")
+        fi
+
+        # Run detection command
+        if [ -n "$detect_cmd" ]; then
+            if eval "$detect_cmd" 2>/dev/null; then
+                DETECTED_KITS+=("$kit_name")
+                echo -e "${GREEN}✓${NC} Detected: ${KIT_DISPLAY_NAMES[$kit_name]}"
+            fi
+        fi
+    fi
+done
+
+if [ ${#DETECTED_KITS[@]} -eq 0 ]; then
+    echo -e "${YELLOW}ℹ${NC} No frameworks auto-detected"
 fi
 
 echo ""
 
-# Step 3: Interactive plugin selection (unless --yes)
-INSTALL_REACT=false
-INSTALL_EXPRESS=false
+# Step 3: Kit selection
+declare -a KITS_TO_INSTALL
 
 if [ "$YES_MODE" = true ]; then
-    INSTALL_REACT=$HAS_REACT
-    INSTALL_EXPRESS=$HAS_EXPRESS
+    # Auto-install all detected kits
+    KITS_TO_INSTALL=("${DETECTED_KITS[@]}")
 
-    if [ "$HAS_REACT" = true ]; then
-        echo -e "${BLUE}Auto-installing: React+MUI plugin${NC}"
-    fi
-    if [ "$HAS_EXPRESS" = true ]; then
-        echo -e "${BLUE}Auto-installing: Express plugin${NC}"
+    if [ ${#KITS_TO_INSTALL[@]} -gt 0 ]; then
+        echo -e "${BLUE}Auto-installing detected kits:${NC}"
+        for kit in "${KITS_TO_INSTALL[@]}"; do
+            echo -e "  - ${KIT_DISPLAY_NAMES[$kit]}"
+        done
+    else
+        echo -e "${BLUE}Installing core infrastructure only${NC}"
     fi
 else
-    # Ask about React
-    if [ "$HAS_REACT" = true ]; then
-        read -p "Install React+MUI plugin? (Y/n): " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Nn]$ ]]; then
-            INSTALL_REACT=false
-        else
-            INSTALL_REACT=true
-        fi
-    else
-        read -p "Install React+MUI plugin? (y/N): " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            INSTALL_REACT=true
-        fi
+    # Interactive selection
+    if [ ${#DETECTED_KITS[@]} -gt 0 ]; then
+        echo -e "${BLUE}Detected kits available:${NC}"
+
+        for kit in "${DETECTED_KITS[@]}"; do
+            read -p "Install ${KIT_DISPLAY_NAMES[$kit]}? (Y/n): " -n 1 -r
+            echo
+            if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+                KITS_TO_INSTALL+=("$kit")
+            fi
+        done
     fi
 
-    # Ask about Express
-    if [ "$HAS_EXPRESS" = true ]; then
-        read -p "Install Express plugin? (Y/n): " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Nn]$ ]]; then
-            INSTALL_EXPRESS=false
-        else
-            INSTALL_EXPRESS=true
+    # Ask about non-detected kits
+    echo ""
+    echo -e "${BLUE}Additional kits available:${NC}"
+
+    for kit in "${ALL_KITS[@]}"; do
+        # Skip if already in detected kits
+        if [[ " ${DETECTED_KITS[@]} " =~ " ${kit} " ]]; then
+            continue
         fi
-    else
-        read -p "Install Express plugin? (y/N): " -n 1 -r
+
+        read -p "Install ${KIT_DISPLAY_NAMES[$kit]}? (y/N): " -n 1 -r
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
-            INSTALL_EXPRESS=true
+            KITS_TO_INSTALL+=("$kit")
         fi
-    fi
+    done
 fi
 
 echo ""
@@ -239,29 +243,43 @@ echo -e "${GREEN}✓${NC} Installed core agents (6 files)"
 cp "$TEMPLATE_DIR/core/commands/"*.md .claude/commands/ 2>/dev/null || true
 echo -e "${GREEN}✓${NC} Installed slash commands (dev-docs)"
 
-# Step 6: Install plugins
+# Step 6: Install selected kits
 INSTALLED_SKILLS=""
 
-if [ "$INSTALL_REACT" = true ]; then
-    if [ -d "$TEMPLATE_DIR/plugins/react-mui/skills/frontend-dev-guidelines" ]; then
-        cp -r "$TEMPLATE_DIR/plugins/react-mui/skills/frontend-dev-guidelines" .claude/skills/
-        cp "$TEMPLATE_DIR/plugins/react-mui/agents/"*.md .claude/agents/ 2>/dev/null || true
-        echo -e "${GREEN}✓${NC} Installed react-mui plugin"
-        INSTALLED_SKILLS="$INSTALLED_SKILLS frontend-dev-guidelines"
-    else
-        echo -e "${YELLOW}⚠${NC} Warning: react-mui plugin not found at $TEMPLATE_DIR/plugins/react-mui"
-    fi
-fi
+for kit in "${KITS_TO_INSTALL[@]}"; do
+    kit_dir="$TEMPLATE_DIR/kits/$kit"
 
-if [ "$INSTALL_EXPRESS" = true ]; then
-    if [ -d "$TEMPLATE_DIR/plugins/express/skills/backend-dev-guidelines" ]; then
-        cp -r "$TEMPLATE_DIR/plugins/express/skills/backend-dev-guidelines" .claude/skills/
-        cp "$TEMPLATE_DIR/plugins/express/agents/"*.md .claude/agents/ 2>/dev/null || true
-        echo -e "${GREEN}✓${NC} Installed express plugin"
-        INSTALLED_SKILLS="$INSTALLED_SKILLS backend-dev-guidelines"
-    else
-        echo -e "${YELLOW}⚠${NC} Warning: express plugin not found at $TEMPLATE_DIR/plugins/express"
+    if [ ! -d "$kit_dir" ]; then
+        echo -e "${YELLOW}⚠${NC} Warning: Kit directory not found: $kit"
+        continue
     fi
+
+    # Install skills from kit
+    if [ -d "$kit_dir/skills" ]; then
+        for skill_dir in "$kit_dir/skills"/*; do
+            if [ -d "$skill_dir" ]; then
+                skill_name=$(basename "$skill_dir")
+                cp -r "$skill_dir" .claude/skills/
+                INSTALLED_SKILLS="$INSTALLED_SKILLS $skill_name"
+            fi
+        done
+    fi
+
+    # Install agents from kit
+    if [ -d "$kit_dir/agents" ]; then
+        cp "$kit_dir/agents/"*.md .claude/agents/ 2>/dev/null || true
+    fi
+
+    # Install commands from kit
+    if [ -d "$kit_dir/commands" ]; then
+        cp "$kit_dir/commands/"*.md .claude/commands/ 2>/dev/null || true
+    fi
+
+    echo -e "${GREEN}✓${NC} Installed ${KIT_DISPLAY_NAMES[$kit]} kit"
+done
+
+if [ ${#KITS_TO_INSTALL[@]} -eq 0 ]; then
+    echo -e "${BLUE}No kits selected - core infrastructure only${NC}"
 fi
 
 # Step 7: Create settings.json

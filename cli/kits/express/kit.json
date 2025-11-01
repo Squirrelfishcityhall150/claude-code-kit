@@ -1,0 +1,11 @@
+{
+  "name": "express",
+  "displayName": "Express",
+  "description": "Express.js framework patterns including routing and middleware",
+  "detect": {
+    "command": "grep -q '\"express\"' package.json"
+  },
+  "provides": {
+    "skills": ["express"]
+  }
+}

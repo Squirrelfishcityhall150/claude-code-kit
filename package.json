@@ -8,7 +8,7 @@
   "files": [
     "claude-setup",
     "cli/core/",
-    "cli/plugins/"
+    "cli/kits/"
   ],
   "scripts": {
     "test": "echo \"Run: ./claude-setup --help\" && exit 0"
