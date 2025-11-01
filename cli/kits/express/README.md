@@ -1,24 +1,21 @@
-# Express.js Backend Plugin
+# Express.js Kit
 
-Claude Code plugin for Express.js backend development with TypeScript.
+Claude Code kit for Express.js framework patterns and middleware.
 
 ## Features
 
 ### Skills
 
-**backend-dev-guidelines** - Comprehensive Node.js/Express/TypeScript development patterns
+**express** - Express.js framework-specific patterns
 
 Includes patterns for:
-- Layered architecture (Routes → Controllers → Services → Repositories)
-- BaseController pattern for consistent error handling
-- Service layer with dependency injection
-- Repository pattern for database access
-- Zod validation schemas
-- Sentry error tracking integration
-- UnifiedConfig pattern for configuration
-- Middleware patterns (auth, audit, error handling)
-- Async/await patterns and error handling
-- Testing strategies
+- Clean route definitions (routes delegate to controllers)
+- BaseController pattern with Sentry integration
+- Middleware patterns (auth, audit with AsyncLocalStorage, error boundaries)
+- Middleware ordering and composition
+- Request/Response handling with TypeScript
+- HTTP status codes and error handling
+- Express-specific APIs and utilities
 
 ### Agents
 
@@ -40,15 +37,19 @@ Specializes in:
 
 ## Installation
 
-```bash
-claude-code-cli init --backend express
-```
-
-Or add to existing installation:
+The Express kit is automatically detected if your project has Express in `package.json`:
 
 ```bash
-claude-code-cli plugin install express
+npx claude-code-setup --yes
 ```
+
+Or install explicitly:
+
+```bash
+npx claude-code-setup --kit express,nodejs,prisma
+```
+
+**Note:** Express kit requires the `nodejs` kit for core backend patterns.
 
 ## Auto-Activation
 
@@ -122,11 +123,18 @@ router.post('/posts', validate(postSchema), postController.createPost.bind(postC
 export default router;
 ```
 
-## Related Plugins
+## Related Kits
 
-- **sentry** - Error tracking integration
-- **prisma** - Database ORM patterns
+- **nodejs** - Core Node.js backend patterns (required)
+- **prisma** - Prisma ORM database patterns
+- **sentry** - Sentry error tracking (coming soon)
+
+## Dependencies
+
+This kit works best with:
+- `nodejs` kit - Core backend architecture patterns
+- `prisma` kit - If using Prisma for database access
 
 ## Documentation
 
-See `skills/backend-dev-guidelines/SKILL.md` for complete documentation.
+See `skills/express/SKILL.md` for complete documentation.
