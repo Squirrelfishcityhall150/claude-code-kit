@@ -347,49 +347,22 @@ cat > .claude/skills/skill-rules.json << 'EOF'
 }
 EOF
 
-# Add React skill if installed
-if [ "$INSTALL_REACT" = true ]; then
-    # Use jq if available, otherwise use python
-    if command -v jq &> /dev/null; then
-        jq '.skills["frontend-dev-guidelines"] = {
-          "type": "guardrail",
-          "enforcement": "block",
-          "priority": "critical",
-          "promptTriggers": {
-            "keywords": ["component", "react", "UI", "MUI", "Material-UI", "Grid", "frontend"],
-            "intentPatterns": ["(create|add|build).*?(component|page|UI)"]
-          },
-          "fileTriggers": {
-            "pathPatterns": ["'"$FRONTEND_DIR"'/**/*.tsx", "src/**/*.tsx"],
-            "contentPatterns": ["from .@mui/material", "React.FC"]
-          }
-        }' .claude/skills/skill-rules.json > .claude/skills/skill-rules.tmp.json
-        mv .claude/skills/skill-rules.tmp.json .claude/skills/skill-rules.json
-    else
-        # Fallback: append manually (less elegant but works)
-        echo "  (Added frontend-dev-guidelines - manual JSON merge)"
-    fi
-fi
+# Merge skill-rules fragments from installed kits
+for kit in "${KITS_TO_INSTALL[@]}"; do
+    fragment_file="$TEMPLATE_DIR/kits/$kit/skill-rules.fragment.json"
 
-# Add Express skill if installed
-if [ "$INSTALL_EXPRESS" = true ]; then
-    if command -v jq &> /dev/null; then
-        jq '.skills["backend-dev-guidelines"] = {
-          "type": "domain",
-          "enforcement": "suggest",
-          "priority": "high",
-          "promptTriggers": {
-            "keywords": ["backend", "controller", "service", "route", "API", "express"],
-            "intentPatterns": ["(create|add|implement).*?(route|endpoint|controller|service)"]
-          },
-          "fileTriggers": {
-            "pathPatterns": ["'"$BACKEND_DIR"'/**/*.ts", "api/**/*.ts"],
-            "contentPatterns": ["from .express", "router\\\\.", "export.*Controller"]
-          }
-        }' .claude/skills/skill-rules.json > .claude/skills/skill-rules.tmp.json
-        mv .claude/skills/skill-rules.tmp.json .claude/skills/skill-rules.json
+    if [ -f "$fragment_file" ]; then
+        if command -v jq &> /dev/null; then
+            # Use jq to merge the fragment into skill-rules.json
+            jq -s '.[0] * {"skills": (.[0].skills + .[1].skills)}' \
+                .claude/skills/skill-rules.json "$fragment_file" > .claude/skills/skill-rules.tmp.json
+            mv .claude/skills/skill-rules.tmp.json .claude/skills/skill-rules.json
+        else
+            echo -e "${YELLOW}⚠${NC} jq not found - skipping skill-rules merge for $kit"
+            echo "   Install jq for automatic skill trigger configuration"
+        fi
     fi
-fi
+done
 
 echo -e "${GREEN}✓${NC} Created skill-rules.json"
 
