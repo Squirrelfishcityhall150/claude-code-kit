@@ -1,0 +1,77 @@
+{
+  "skills": {
+    "frontend-dev-guidelines": {
+      "type": "guardrail",
+      "enforcement": "block",
+      "priority": "high",
+      "promptTriggers": {
+        "keywords": [
+          "component",
+          "react component",
+          "UI",
+          "interface",
+          "page",
+          "modal",
+          "dialog",
+          "form",
+          "MUI",
+          "Material-UI",
+          "Grid",
+          "styling",
+          "frontend",
+          "React",
+          "client",
+          "tsx",
+          "jsx",
+          "suspense",
+          "lazy loading",
+          "tanstack",
+          "query",
+          "router"
+        ],
+        "intentPatterns": [
+          "(create|add|make|build|update|modify|edit).*?(component|UI|page|modal|dialog|form)",
+          "(how to|best practice).*?(component|react|MUI)",
+          "(style|design|layout).*?(component|UI)",
+          "(implement|add).*?(routing|navigation|data.*?fetching)",
+          "(create|build).*?(feature|page|view)"
+        ]
+      },
+      "fileTriggers": {
+        "pathPatterns": [
+          "{{FRONTEND_DIR}}/**/*.tsx",
+          "{{FRONTEND_DIR}}/**/*.ts",
+          "{{COMPONENTS_DIR}}/**/*.tsx",
+          "{{FEATURES_DIR}}/**/*.tsx",
+          "src/**/*.tsx",
+          "client/**/*.tsx",
+          "web/**/*.tsx",
+          "app/**/*.tsx",
+          "pages/**/*.tsx"
+        ],
+        "pathExclusions": [
+          "**/*.test.tsx",
+          "**/*.test.ts",
+          "**/*.spec.tsx",
+          "**/*.spec.ts",
+          "**/*.styles.ts",
+          "**/vite.config.ts",
+          "**/tsconfig.json",
+          "**/node_modules/**"
+        ],
+        "contentPatterns": [
+          "from '@mui/material'",
+          "import.*Grid.*from.*@mui",
+          "<Grid ",
+          "Grid2",
+          "Unstable_Grid",
+          "from 'react'",
+          "React\\.FC<",
+          "useSuspenseQuery",
+          "@tanstack/react-query",
+          "@tanstack/react-router"
+        ]
+      }
+    }
+  }
+}
