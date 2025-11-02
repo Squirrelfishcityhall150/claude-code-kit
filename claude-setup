@@ -430,15 +430,62 @@ echo ""
 echo "Next steps:"
 echo ""
 echo "1. Test skill activation:"
-if [ "$INSTALL_REACT" = true ]; then
-    echo "   - Edit a .tsx file"
-    echo "   - Ask Claude: 'How do I create a React component?'"
-    echo "   - frontend-dev-guidelines should activate!"
-fi
-if [ "$INSTALL_EXPRESS" = true ]; then
-    echo "   - Edit a route file"
-    echo "   - Ask Claude: 'How do I create an API endpoint?'"
-    echo "   - backend-dev-guidelines should activate!"
+echo ""
+
+# Generate test examples based on installed kits
+test_examples_shown=false
+
+for kit in "${KITS_TO_INSTALL[@]}"; do
+    case "$kit" in
+        react)
+            echo "   React skill:"
+            echo "   - Edit a .tsx file or ask 'How do I create a React component?'"
+            echo ""
+            test_examples_shown=true
+            ;;
+        mui)
+            echo "   MUI skill:"
+            echo "   - Edit a component file or ask 'How do I style with MUI?'"
+            echo ""
+            test_examples_shown=true
+            ;;
+        nodejs)
+            echo "   Node.js skill:"
+            echo "   - Edit a service file or ask 'How do I create a service layer?'"
+            echo ""
+            test_examples_shown=true
+            ;;
+        express)
+            echo "   Express skill:"
+            echo "   - Edit a route file or ask 'How do I create an API endpoint?'"
+            echo ""
+            test_examples_shown=true
+            ;;
+        prisma)
+            echo "   Prisma skill:"
+            echo "   - Edit schema.prisma or ask 'How do I create a Prisma model?'"
+            echo ""
+            test_examples_shown=true
+            ;;
+        tanstack-query)
+            echo "   TanStack Query skill:"
+            echo "   - Ask 'How do I fetch data with TanStack Query?'"
+            echo ""
+            test_examples_shown=true
+            ;;
+        tanstack-router)
+            echo "   TanStack Router skill:"
+            echo "   - Ask 'How do I create a route with TanStack Router?'"
+            echo ""
+            test_examples_shown=true
+            ;;
+    esac
+done
+
+if [ "$test_examples_shown" = false ]; then
+    echo "   Try editing files or asking Claude questions!"
+    echo "   The skill-developer skill is always available."
+    echo ""
 fi
 echo ""
 echo "2. Review configuration:"
