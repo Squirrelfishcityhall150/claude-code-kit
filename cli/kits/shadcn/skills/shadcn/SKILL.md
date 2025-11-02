@@ -37,6 +37,32 @@ npx shadcn@latest add dialog
 npx shadcn@latest add button card dialog
 ```
 
+### Troubleshooting
+
+#### npm Cache Errors (ENOTEMPTY)
+
+If `npx shadcn@latest add` fails with npm cache errors like `ENOTEMPTY` or `syscall rename`:
+
+**Solution 1: Clear npm cache**
+```bash
+npm cache clean --force
+npx shadcn@latest add table
+```
+
+**Solution 2: Use pnpm (recommended)**
+```bash
+pnpm dlx shadcn@latest add table
+```
+
+**Solution 3: Use yarn**
+```bash
+yarn dlx shadcn@latest add table
+```
+
+**Solution 4: Manual component installation**
+
+Visit the [shadcn/ui documentation](https://ui.shadcn.com/docs/components) for the specific component and copy the code directly into your project.
+
 ## Component Usage
 
 ### Button & Card
