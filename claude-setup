@@ -347,11 +347,15 @@ EOF
 echo -e "${GREEN}✓${NC} Created settings.json"
 
 # Step 8: Create skill-rules.json
-# Start with base structure
-cat > .claude/skills/skill-rules.json << 'EOF'
+# Start with base structure from skill-developer fragment
+if [ -f ".claude/skills/skill-developer/skill-rules-fragment.json" ] && command -v jq &> /dev/null; then
+    # Use the skill-developer fragment as the base
+    jq '{"version": "1.0", "skills": .}' .claude/skills/skill-developer/skill-rules-fragment.json > .claude/skills/skill-rules.json
+else
+    # Fallback to minimal base if jq not available or fragment missing
+    cat > .claude/skills/skill-rules.json << 'EOF'
 {
   "version": "1.0",
-  "description": "Skill activation triggers for Claude Code",
   "skills": {
     "skill-developer": {
       "type": "domain",
@@ -364,6 +368,7 @@ cat > .claude/skills/skill-rules.json << 'EOF'
   }
 }
 EOF
+fi
 
 # Merge skill-rules fragments from installed kits
 for kit in "${KITS_TO_INSTALL[@]}"; do

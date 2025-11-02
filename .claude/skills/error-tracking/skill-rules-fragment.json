@@ -1,0 +1,38 @@
+{
+  "error-tracking": {
+    "type": "domain",
+    "enforcement": "suggest",
+    "priority": "high",
+    "description": "Sentry error tracking and performance monitoring patterns",
+    "promptTriggers": {
+      "keywords": [
+        "error handling",
+        "exception",
+        "sentry",
+        "error tracking",
+        "captureException",
+        "monitoring",
+        "performance tracking"
+      ],
+      "intentPatterns": [
+        "(add|create|implement|setup).*?(error handling|sentry|error tracking)",
+        "(fix|handle|catch).*?(error|exception)",
+        "(how to|best practice).*?(error|sentry|monitoring)"
+      ]
+    },
+    "fileTriggers": {
+      "pathPatterns": [
+        "**/instrument.ts",
+        "**/sentry*.ts",
+        "**/*Controller.ts",
+        "**/*Service.ts"
+      ],
+      "contentPatterns": [
+        "@sentry",
+        "Sentry\\.",
+        "captureException",
+        "captureMessage"
+      ]
+    }
+  }
+}

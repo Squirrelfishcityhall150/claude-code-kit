@@ -10,11 +10,27 @@ const path = require('path');
 const REPO_ROOT = path.join(__dirname, '..');
 const OUTPUT_FILE = path.join(REPO_ROOT, '.claude', 'skills', 'skill-rules.json');
 const KITS_DIR = path.join(REPO_ROOT, 'cli', 'kits');
+const INFRASTRUCTURE_SKILLS_DIR = path.join(REPO_ROOT, '.claude', 'skills');
 
 function findFragmentFiles() {
   const fragments = [];
-  const kits = fs.readdirSync(KITS_DIR);
 
+  // Find infrastructure skill fragments in .claude/skills/
+  if (fs.existsSync(INFRASTRUCTURE_SKILLS_DIR)) {
+    const skills = fs.readdirSync(INFRASTRUCTURE_SKILLS_DIR);
+    for (const skill of skills) {
+      const skillDir = path.join(INFRASTRUCTURE_SKILLS_DIR, skill);
+      if (!fs.statSync(skillDir, { throwIfNoEntry: false })?.isDirectory()) continue;
+
+      const fragmentPath = path.join(skillDir, 'skill-rules-fragment.json');
+      if (fs.existsSync(fragmentPath)) {
+        fragments.push(path.relative(REPO_ROOT, fragmentPath));
+      }
+    }
+  }
+
+  // Find kit skill fragments in cli/kits/*/skills/
+  const kits = fs.readdirSync(KITS_DIR);
   for (const kit of kits) {
     const skillsDir = path.join(KITS_DIR, kit, 'skills');
     if (!fs.existsSync(skillsDir)) continue;

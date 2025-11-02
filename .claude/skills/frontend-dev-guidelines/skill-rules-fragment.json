@@ -1,0 +1,66 @@
+{
+  "frontend-dev-guidelines": {
+    "type": "guardrail",
+    "enforcement": "block",
+    "priority": "high",
+    "description": "React/TypeScript best practices including MUI v7 compatibility",
+    "promptTriggers": {
+      "keywords": [
+        "component",
+        "react component",
+        "UI",
+        "interface",
+        "page",
+        "modal",
+        "dialog",
+        "form",
+        "MUI",
+        "Material-UI",
+        "Grid",
+        "styling",
+        "frontend",
+        "React"
+      ],
+      "intentPatterns": [
+        "(create|add|make|build|update|modify|edit).*?(component|UI|page|modal|dialog|form)",
+        "(how to|best practice).*?(component|react|MUI)",
+        "(style|design|layout).*?(component|UI)"
+      ]
+    },
+    "fileTriggers": {
+      "pathPatterns": [
+        "frontend/src/**/*.tsx",
+        "frontend/src/**/*.ts",
+        "client/src/**/*.tsx",
+        "client/src/**/*.ts",
+        "src/**/*.tsx"
+      ],
+      "pathExclusions": [
+        "**/*.test.tsx",
+        "**/*.test.ts",
+        "**/*.spec.tsx",
+        "**/*.spec.ts",
+        "**/*.styles.ts",
+        "**/vite.config.ts",
+        "**/tsconfig.json"
+      ],
+      "contentPatterns": [
+        "from '@mui/material';",
+        "import.*Grid.*from.*@mui",
+        "<Grid ",
+        "Grid2",
+        "Unstable_Grid",
+        "makeStyles",
+        "@material-ui/core"
+      ]
+    },
+    "blockMessage": "⚠️ BLOCKED - Frontend Best Practices Required\n\n📋 REQUIRED ACTION:\n1. Use Skill tool: 'frontend-dev-guidelines'\n2. Review MUI v7 patterns (Grid uses size={{}} prop, NOT xs/sm props)\n3. Check React/TypeScript best practices\n4. Use proper styling patterns\n5. Then retry this edit\n\nReason: Enforce MUI v7 compatibility and React best practices\nFile: {file_path}\n\n💡 TIP: Add '// @skip-validation' comment to skip future checks",
+    "skipConditions": {
+      "sessionSkillUsed": true,
+      "fileMarkers": [
+        "@skip-validation"
+      ],
+      "envOverride": "SKIP_FRONTEND_GUIDELINES"
+    }
+  }
+}
