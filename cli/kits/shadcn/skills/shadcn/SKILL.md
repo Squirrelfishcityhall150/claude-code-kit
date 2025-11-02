@@ -22,19 +22,19 @@ Best practices for using shadcn/ui components with Tailwind CSS and Radix UI pri
 ### Initial Setup
 
 ```bash
-npx shadcn-ui@latest init
+npx shadcn@latest init
 ```
 
 ### Add Components
 
 ```bash
 # Add individual components
-npx shadcn-ui@latest add button
-npx shadcn-ui@latest add form
-npx shadcn-ui@latest add dialog
+npx shadcn@latest add button
+npx shadcn@latest add form
+npx shadcn@latest add dialog
 
 # Add multiple
-npx shadcn-ui@latest add button card dialog
+npx shadcn@latest add button card dialog
 ```
 
 ## Component Usage
@@ -386,24 +386,26 @@ export const buttonVariants = cva(
 
 ## Theming
 
-### CSS Variables
+### CSS Variables (OKLCH Format)
+
+shadcn/ui now uses OKLCH color format for better color accuracy and perceptual uniformity:
 
 ```css
 /* app/globals.css */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: oklch(0.985 0 0);
     /* ... */
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --primary: oklch(0.598 0.15 264);
+    --primary-foreground: oklch(0.205 0 0);
     /* ... */
   }
 }
