@@ -1,0 +1,34 @@
+{
+  "tailwindcss": {
+    "intent_patterns": [
+      "style.*with.*tailwind",
+      "add.*tailwind.*classes",
+      "configure.*tailwind",
+      "setup.*tailwind",
+      "customize.*theme",
+      "add.*dark.*mode",
+      "style.*component"
+    ],
+    "keyword_patterns": [
+      "tailwind",
+      "tailwindcss",
+      "className=",
+      "utility classes",
+      "@apply",
+      "tailwind.config"
+    ],
+    "content_patterns": [
+      "className=['\"].*flex",
+      "className=['\"].*grid",
+      "className=['\"].*bg-",
+      "className=['\"].*text-",
+      "@apply"
+    ],
+    "file_path_patterns": [
+      "**/tailwind.config.js",
+      "**/tailwind.config.ts",
+      "**/globals.css",
+      "**/*.css"
+    ]
+  }
+}

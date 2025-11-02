@@ -1,0 +1,40 @@
+{
+  "react": {
+    "intent_patterns": [
+      "create.*component",
+      "add.*component",
+      "create.*react.*component",
+      "use.*hook",
+      "implement.*useState",
+      "implement.*useEffect",
+      "add.*lazy.*loading",
+      "create.*suspense.*boundary",
+      "optimize.*component",
+      "memoize.*component"
+    ],
+    "keyword_patterns": [
+      "react",
+      "useState",
+      "useEffect",
+      "useCallback",
+      "useMemo",
+      "useRef",
+      "React.lazy",
+      "Suspense",
+      "react component",
+      "functional component"
+    ],
+    "content_patterns": [
+      "import.*from ['\"]react['\"]",
+      "useState<",
+      "useEffect\\(",
+      "React\\.FC"
+    ],
+    "file_path_patterns": [
+      "**/*.tsx",
+      "**/*.jsx",
+      "**/components/**/*.ts",
+      "**/features/**/*.tsx"
+    ]
+  }
+}
