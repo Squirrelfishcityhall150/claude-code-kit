@@ -7,7 +7,13 @@ description: Material-UI v7 component library patterns including sx prop styling
 
 ## Purpose
 
-Material-UI v7 patterns for component usage, styling with sx prop, theme integration, and responsive design.
+Material-UI v7 (released March 2025) patterns for component usage, styling with sx prop, theme integration, and responsive design.
+
+**Note**: MUI v7 breaking changes from v6:
+- Deep imports no longer work - use package exports field
+- `onBackdropClick` removed from Modal - use `onClose` instead
+- All components now use standardized `slots` and `slotProps` pattern
+- CSS layers support via `enableCssLayer` config (works with Tailwind v4)
 
 ## When to Use This Skill
 
