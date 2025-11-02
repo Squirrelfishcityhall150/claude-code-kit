@@ -187,68 +187,15 @@ function PostDetails() {
 
 ## Navigation
 
-### Link Component
-
 ```typescript
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 
-// Basic link
-<Link to="/posts">View Posts</Link>
+// Link component
+<Link to="/posts/$postId" params={{ postId: '123' }}>View Post</Link>
 
-// Link with parameters
-<Link to="/posts/$postId" params={{ postId: '123' }}>
-  View Post
-</Link>
-
-// Link with search params
-<Link
-  to="/posts"
-  search={{ filter: 'published', sort: 'date' }}
->
-  Published Posts
-</Link>
-
-// Active link styling
-<Link
-  to="/posts"
-  activeProps={{
-    className: 'active-link',
-  }}
->
-  Posts
-</Link>
-```
-
-### Programmatic Navigation
-
-```typescript
-import { useNavigate } from '@tanstack/react-router';
-
-function Component() {
-  const navigate = useNavigate();
-
-  const handleClick = () => {
-    // Navigate to route
-    navigate({ to: '/posts' });
-
-    // Navigate with params
-    navigate({
-      to: '/posts/$postId',
-      params: { postId: '123' },
-    });
-
-    // Navigate with search
-    navigate({
-      to: '/posts',
-      search: { filter: 'published' },
-    });
-
-    // Navigate back
-    navigate({ to: '..', });
-  };
-
-  return <button onClick={handleClick}>Go</button>;
-}
+// Programmatic navigation
+const navigate = useNavigate();
+navigate({ to: '/posts', search: { filter: 'published' } });
 ```
 
 ---
