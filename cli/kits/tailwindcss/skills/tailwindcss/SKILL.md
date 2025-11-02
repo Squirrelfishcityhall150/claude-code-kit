@@ -1,13 +1,15 @@
 ---
 name: tailwindcss
 displayName: Tailwind CSS
-description: Tailwind CSS utility-first styling patterns
+description: Tailwind CSS v4 utility-first styling patterns
 version: 1.0.0
 ---
 
-# Tailwind CSS Development Guidelines
+# Tailwind CSS v4 Development Guidelines
 
-Best practices for using Tailwind CSS utility classes effectively.
+Best practices for using Tailwind CSS v4 utility classes effectively.
+
+**Note**: Tailwind CSS v4 (released January 2025) uses a CSS-first configuration approach. If you need v3 compatibility, tailwind.config.js is still supported.
 
 ## Core Principles
 
@@ -187,13 +189,17 @@ Best practices for using Tailwind CSS utility classes effectively.
 
 ## Dark Mode
 
-```tsx
-// Configure in tailwind.config.js
-module.exports = {
-  darkMode: 'class', // or 'media'
-}
+```css
+/* Tailwind v4: Configure in app/globals.css */
+@import "tailwindcss";
 
-// Usage
+@media (prefers-color-scheme: dark) {
+  /* Or use class-based: .dark */
+}
+```
+
+```tsx
+// Usage (same as v3)
 <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
   <h1 className="text-gray-900 dark:text-white">Title</h1>
   <p className="text-gray-600 dark:text-gray-400">Description</p>
@@ -223,9 +229,33 @@ module.exports = {
 
 ## Configuration
 
-### tailwind.config.js
+### Tailwind v4: CSS-First Configuration
+
+```css
+/* app/globals.css */
+@import "tailwindcss";
+
+@theme {
+  /* Custom colors */
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-900: #1e3a8a;
+
+  /* Custom spacing */
+  --spacing-128: 32rem;
+
+  /* Custom fonts */
+  --font-family-sans: 'Inter', sans-serif;
+
+  /* Custom breakpoints */
+  --breakpoint-3xl: 1920px;
+}
+```
+
+### Tailwind v3 Config (Still Supported)
 
 ```javascript
+// tailwind.config.js (optional in v4)
 module.exports = {
   content: [
     './app/**/*.{js,ts,jsx,tsx,mdx}',
@@ -237,7 +267,6 @@ module.exports = {
         brand: {
           50: '#eff6ff',
           100: '#dbeafe',
-          // ... more shades
           900: '#1e3a8a',
         }
       },
@@ -280,13 +309,15 @@ npm install @tailwindcss/container-queries
 
 ## Performance
 
-### Purging Unused CSS
+### Automatic Content Detection
 
-Tailwind automatically purges unused styles in production based on `content` config.
+Tailwind v4 automatically detects and scans all template files - no `content` configuration needed.
 
-### JIT Mode
+### Build Performance
 
-JIT (Just-In-Time) mode is enabled by default in Tailwind v3+. It generates styles on-demand.
+Tailwind v4 delivers 3.5x faster full builds (~100ms) compared to v3 using modern CSS features like `@property` and `color-mix()`.
+
+**Browser Requirements**: Safari 16.4+, Chrome 111+, Firefox 128+
 
 ## Common Patterns
 
