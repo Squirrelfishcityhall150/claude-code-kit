@@ -1,13 +1,19 @@
 ---
 name: react
-description: Core React 18+ patterns including hooks, Suspense, lazy loading, component structure, TypeScript best practices, and performance optimization. Use when working with React components, hooks, lazy loading, Suspense boundaries, or React-specific TypeScript patterns.
+description: Core React 19 patterns including hooks, Suspense, lazy loading, component structure, TypeScript best practices, and performance optimization. Use when working with React components, hooks, lazy loading, Suspense boundaries, or React-specific TypeScript patterns.
 ---
 
 # React Core Patterns
 
 ## Purpose
 
-Essential React 18+ patterns for building modern applications with hooks, Suspense, lazy loading, and TypeScript.
+Essential React 19 patterns for building modern applications with hooks, Suspense, lazy loading, and TypeScript.
+
+**Note**: React 19 (released December 2024) breaking changes:
+- `forwardRef` no longer needed - pass `ref` as a prop directly
+- `propTypes` removed (silently ignored)
+- New JSX transform required
+- `React.FC` type discouraged - use direct function components instead
 
 ## When to Use This Skill
 
@@ -25,7 +31,7 @@ Essential React 18+ patterns for building modern applications with hooks, Suspen
 ### Component Structure Template
 
 ```typescript
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
 interface Props {
   userId: string;
@@ -37,7 +43,7 @@ interface UserData {
   email: string;
 }
 
-const UserProfile: React.FC<Props> = ({ userId, onUpdate }) => {
+function UserProfile({ userId, onUpdate }: Props) {
   const [data, setData] = useState<UserData | null>(null);
 
   const handleUpdate = useCallback((newData: UserData) => {
@@ -50,7 +56,7 @@ const UserProfile: React.FC<Props> = ({ userId, onUpdate }) => {
       {/* Component content */}
     </div>
   );
-};
+}
 
 export default UserProfile;
 ```
@@ -59,14 +65,15 @@ export default UserProfile;
 
 Creating a React component? Follow this:
 
-- [ ] Use `React.FC<Props>` pattern with TypeScript
+- [ ] Use function components with typed props (not `React.FC`)
 - [ ] Define interfaces for Props and local state
 - [ ] Use `useCallback` for event handlers passed to children
 - [ ] Use `useMemo` for expensive computations
-- [ ] Lazy load if heavy component: `React.lazy(() => import())`
+- [ ] Lazy load if heavy component: `lazy(() => import())`
 - [ ] Wrap lazy components in `<Suspense>` with fallback
 - [ ] Default export at bottom
 - [ ] No conditional hooks (hooks must be called in same order)
+- [ ] Pass `ref` as a prop (no `forwardRef` needed in React 19)
 
 ---
 

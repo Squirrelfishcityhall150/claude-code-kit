@@ -134,16 +134,15 @@ function TextInput() {
   return <input ref={inputRef} />;
 }
 
-// Component refs with forwardRef
+// Component refs (React 19: ref as prop, no forwardRef needed)
 interface InputProps {
   placeholder: string;
+  ref?: React.Ref<HTMLInputElement>;
 }
 
-const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ placeholder }, ref) => {
-    return <input ref={ref} placeholder={placeholder} />;
-  }
-);
+function Input({ placeholder, ref }: InputProps) {
+  return <input ref={ref} placeholder={placeholder} />;
+}
 ```
 
 ## Context with TypeScript
