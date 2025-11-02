@@ -1,360 +1,447 @@
-# Claude Code Infrastructure Showcase
+# Claude Code Kit
 
-**A curated reference library of production-tested Claude Code infrastructure.**
+**Claude Code infrastructure with auto-activating skills and framework-specific kits.**
 
-Born from 6 months of real-world use managing a complex TypeScript microservices project, this showcase provides the patterns and systems that solved the "skills don't activate automatically" problem and scaled Claude Code for enterprise development.
+Install complete Claude Code infrastructure in 30 seconds with automatic framework detection and skill auto-activation.
 
-> **This is NOT a working application** - it's a reference library. Copy what you need into your own projects.
+## Quick Start
 
----
-
-## What's Inside
-
-**Production-tested infrastructure for:**
-- ✅ **Auto-activating skills** via hooks
-- ✅ **Modular skill pattern** (500-line rule with progressive disclosure)
-- ✅ **Specialized agents** for complex tasks
-- ✅ **Dev docs system** that survives context resets
-- ✅ **Comprehensive examples** using generic blog domain
-
-**Time investment to build:** 6 months of iteration
-**Time to integrate into your project:** 15-30 minutes
-
----
-
-## Quick Start - Pick Your Path
-
-### 🤖 Using Claude Code to Integrate?
-
-**Claude:** Read [`CLAUDE_INTEGRATION_GUIDE.md`](CLAUDE_INTEGRATION_GUIDE.md) for step-by-step integration instructions tailored for AI-assisted setup.
-
-### 🎯 I want skill auto-activation
-
-**The breakthrough feature:** Skills that actually activate when you need them.
-
-**What you need:**
-1. The skill-activation hooks (2 files)
-2. A skill or two relevant to your work
-3. 15 minutes
-
-**👉 [Setup Guide: .claude/hooks/README.md](.claude/hooks/README.md)**
-
-### 📚 I want to add ONE skill
-
-Browse the [skills catalog](.claude/skills/) and copy what you need.
-
-**Available:**
-- **backend-dev-guidelines** - Node.js/Express/TypeScript patterns
-- **frontend-dev-guidelines** - React/TypeScript/MUI v7 patterns
-- **skill-developer** - Meta-skill for creating skills
-- **route-tester** - Test authenticated API routes
-- **error-tracking** - Sentry integration patterns
-
-**👉 [Skills Guide: .claude/skills/README.md](.claude/skills/README.md)**
-
-### 🤖 I want specialized agents
-
-10 production-tested agents for complex tasks:
-- Code architecture review
-- Refactoring assistance
-- Documentation generation
-- Error debugging
-- And more...
-
-**👉 [Agents Guide: .claude/agents/README.md](.claude/agents/README.md)**
-
----
-
-## What Makes This Different?
-
-### The Auto-Activation Breakthrough
-
-**Problem:** Claude Code skills just sit there. You have to remember to use them.
-
-**Solution:** UserPromptSubmit hook that:
-- Analyzes your prompts
-- Checks file context
-- Automatically suggests relevant skills
-- Works via `skill-rules.json` configuration
-
-**Result:** Skills activate when you need them, not when you remember them.
-
-### Production-Tested Patterns
-
-These aren't theoretical examples - they're extracted from:
-- ✅ 6 microservices in production
-- ✅ 50,000+ lines of TypeScript
-- ✅ React frontend with complex data grids
-- ✅ Sophisticated workflow engine
-- ✅ 6 months of daily Claude Code use
-
-The patterns work because they solved real problems.
-
-### Modular Skills (500-Line Rule)
-
-Large skills hit context limits. The solution:
-
-```
-skill-name/
-  SKILL.md                  # <500 lines, high-level guide
-  resources/
-    topic-1.md              # <500 lines each
-    topic-2.md
-    topic-3.md
+```bash
+npx @blen/claude-code-kit
 ```
 
-**Progressive disclosure:** Claude loads main skill first, loads resources only when needed.
+**What happens:**
+1. Detects your frameworks (Next.js, React, Express, Prisma, etc.)
+2. Asks which kits to install
+3. Copies hooks, agents, commands, and skills to `.claude/`
+4. Configures automatic skill activation via `skill-rules.json`
+5. Installs everything in < 30 seconds
+
+**Result:** Skills automatically activate when you need them based on your prompts, file edits, and technology usage.
+
+---
+
+## What's a Kit?
+
+A **kit** is a framework-specific package that includes:
+- **Skill** - Best practices, patterns, and examples for the framework
+- **Auto-activation triggers** - Keywords and patterns that activate the skill
+- **Resources** - Detailed guides organized by topic
+- **Detection logic** - Automatic framework detection
+
+When installed, kits make Claude Code an expert in your stack.
+
+---
+
+## Available Kits
+
+### Frontend Kits
+
+| Kit | Description | Documentation |
+|-----|-------------|---------------|
+| **Next.js** | Next.js 14+ App Router, Server Components, Server Actions | [SKILL.md](cli/kits/nextjs/skills/nextjs/SKILL.md) |
+| **React** | React 19 hooks, Suspense, lazy loading, TypeScript patterns | [README](cli/kits/react/README.md) |
+| **shadcn/ui** | shadcn/ui component library with Tailwind CSS | [SKILL.md](cli/kits/shadcn/skills/shadcn/SKILL.md) |
+| **Tailwind CSS** | Tailwind v4 utilities, responsive design, theming | [SKILL.md](cli/kits/tailwindcss/skills/tailwindcss/SKILL.md) |
+| **Material-UI** | MUI v7 components, sx prop styling, theming | [README](cli/kits/mui/README.md) |
+| **TanStack Router** | File-based routing, loaders, type-safe navigation | [README](cli/kits/tanstack-router/README.md) |
+| **TanStack Query** | Data fetching with useSuspenseQuery, cache management | [README](cli/kits/tanstack-query/README.md) |
+
+### Backend Kits
+
+| Kit | Description | Documentation |
+|-----|-------------|---------------|
+| **Express** | Express.js routing, middleware, controllers | [README](cli/kits/express/README.md) |
+| **Node.js** | Layered architecture, async patterns, error handling | [README](cli/kits/nodejs/README.md) |
+| **Prisma** | Prisma ORM query patterns, repository pattern, transactions | [README](cli/kits/prisma/README.md) |
+
+**All kits are auto-detected during installation based on your package.json and project structure.**
+
+---
+
+## Core Infrastructure
+
+Every installation includes:
+
+### Hooks (6)
+
+**Essential (Auto-configured):**
+- **skill-activation-prompt** (UserPromptSubmit) - Analyzes prompts and suggests relevant skills automatically
+- **post-tool-use-tracker** (PostToolUse) - Tracks file changes to maintain context across sessions
+
+**Optional (Requires customization):**
+- **tsc-check** (Stop) - TypeScript compilation check (monorepo-friendly)
+- **trigger-build-resolver** (Stop) - Auto-launches build-error-resolver agent on build failures
+- **error-handling-reminder** (Stop) - Gentle reminders for error handling patterns
+- **stop-build-check-enhanced** (Stop) - Enhanced build checking with smart filtering
+
+### Agents (6)
+
+Specialized assistants for complex tasks:
+
+- **code-architecture-reviewer** - Reviews code for adherence to best practices and architectural consistency
+- **code-refactor-master** - Refactors code for better organization, cleaner architecture, improved maintainability
+- **documentation-architect** - Creates comprehensive documentation from code and memory
+- **plan-reviewer** - Reviews development plans for completeness and potential issues
+- **refactor-planner** - Analyzes code structure and creates comprehensive refactoring plans
+- **web-research-specialist** - Researches technical solutions across GitHub, Stack Overflow, Reddit, forums
+
+### Commands (6)
+
+Slash commands for common workflows:
+
+- **/build-and-fix** - Builds project and automatically fixes errors
+- **/code-review** - Conducts comprehensive code review with best practices
+- **/dev-docs** - Creates strategic development plans with structured task breakdown
+- **/dev-docs-update** - Updates development documentation before context compaction
+- **/route-research-for-testing** - Maps edited routes and launches comprehensive tests
+- **/test-route** - Tests authenticated API routes with proper auth context
+
+### Skills (1)
+
+- **skill-developer** - Meta-skill for creating and managing Claude Code skills following Anthropic best practices
+
+---
+
+## How It Works
+
+### Auto-Activation System
+
+Skills automatically activate based on:
+
+1. **Prompt Keywords**
+   - Example: "create a table component" → shadcn skill activates
+   - Example: "query the database" → Prisma skill activates
+
+2. **Intent Patterns** (Regex)
+   - Example: "add.*authentication" → relevant auth patterns activate
+   - Example: "optimize.*component" → React performance skill activates
+
+3. **File Path Triggers**
+   - Editing `app/**/*.tsx` → Next.js skill activates
+   - Editing `prisma/schema.prisma` → Prisma skill activates
+
+4. **Content Patterns**
+   - File contains `useQuery(` → TanStack Query skill activates
+   - File contains `createFileRoute` → TanStack Router skill activates
+
+All configured in `.claude/skills/skill-rules.json` (auto-generated during install).
+
+### What Gets Installed
+
+```
+your-project/
+└── .claude/
+    ├── hooks/                    # Automation scripts
+    │   ├── skill-activation-prompt.*
+    │   ├── post-tool-use-tracker.sh
+    │   └── ... (4 optional hooks)
+    ├── agents/                   # Specialized assistants
+    │   ├── code-architecture-reviewer.md
+    │   ├── refactor-planner.md
+    │   └── ... (4 more agents)
+    ├── commands/                 # Slash commands
+    │   ├── dev-docs.md
+    │   ├── build-and-fix.md
+    │   └── ... (4 more commands)
+    └── skills/                   # Skills + auto-activation
+        ├── skill-developer/
+        ├── nextjs/              # If installed
+        ├── react/               # If installed
+        ├── shadcn/              # If installed
+        └── skill-rules.json     # Auto-activation config
+```
+
+---
+
+## Usage Examples
+
+### Installing for Next.js + shadcn Project
+
+```bash
+cd my-nextjs-app
+npx @blen/claude-code-kit
+```
+
+**Detects:**
+- Next.js (from package.json)
+- React (from package.json)
+- shadcn/ui (from components.json)
+- Tailwind CSS (from tailwind.config.ts)
+
+**Prompts:** "Install these detected kits? (Y/n)"
+
+**Result:** Next.js, React, shadcn, and Tailwind skills auto-activate when you:
+- Ask: "create a server component with a data table"
+- Edit: `app/dashboard/page.tsx`
+- Mention: "use shadcn table component"
+
+---
+
+### Installing for Express Backend
+
+```bash
+cd my-api
+npx @blen/claude-code-kit
+```
+
+**Detects:**
+- Express (from package.json)
+- Node.js (module type)
+- Prisma (from prisma/schema.prisma)
+
+**Prompts:** "Install these detected kits? (Y/n)"
+
+**Result:** Express, Node.js, and Prisma skills auto-activate when you:
+- Ask: "create an API route for users"
+- Edit: `routes/users.ts`
+- Mention: "query users from database"
+
+---
+
+### Installing for Full-Stack App
+
+```bash
+cd my-fullstack-app
+npx @blen/claude-code-kit
+```
+
+**Detects both frontend and backend kits automatically**
+
+**Prompts:** Select from detected frameworks
+
+**Result:** Complete coverage of your entire stack
+
+---
+
+### Re-running to Add More Kits
+
+```bash
+npx @blen/claude-code-kit
+```
+
+**Detects:** Existing installation
+
+**Offers:**
+- Update existing kits
+- Add new kits
+- Keep current setup
+
+---
+
+## Contributing Kits
+
+Want to add support for a new framework? Here's how to create a kit:
+
+### Kit Structure
+
+```
+cli/kits/your-framework/
+├── kit.json                      # Metadata and detection
+├── skills/
+│   └── your-framework/
+│       ├── SKILL.md             # Main skill file (<500 lines)
+│       ├── skill-rules-fragment.json  # Auto-activation triggers
+│       └── resources/           # Optional: detailed guides
+│           ├── topic-1.md
+│           └── topic-2.md
+└── agents/                      # Optional: kit-specific agents
+    └── your-framework-agent.md
+```
+
+### kit.json Format
+
+```json
+{
+  "name": "your-framework",
+  "displayName": "Your Framework",
+  "description": "Short description of what this kit provides",
+  "detect": "command to detect framework",
+  "provides": ["skill:your-framework"]
+}
+```
+
+**Detection Examples:**
+```bash
+# Detect from package.json
+"detect": "grep -q '\"your-framework\"' package.json"
+
+# Detect from config file
+"detect": "test -f your-framework.config.js"
+
+# Detect from directory
+"detect": "test -d src/your-framework"
+```
+
+### SKILL.md Format
+
+Follow Anthropic best practices:
+- Keep main file < 500 lines
+- Use YAML frontmatter
+- Add table of contents
+- Use progressive disclosure (link to resources/)
+- Include complete examples
+
+```markdown
+---
+name: your-framework
+displayName: Your Framework
+description: Complete description with all keywords for trigger matching (max 1024 chars)
+version: 1.0.0
+---
+
+# Your Framework Development Guide
+
+Best practices for using Your Framework...
+
+## Table of Contents
+
+- [Getting Started](#getting-started)
+- [Core Concepts](#core-concepts)
+...
+
+## Additional Resources
+
+For detailed information, see:
+- [Advanced Patterns](resources/advanced-patterns.md)
+- [API Reference](resources/api-reference.md)
+```
+
+### skill-rules-fragment.json Format
+
+```json
+{
+  "your-framework": {
+    "type": "domain",
+    "enforcement": "suggest",
+    "priority": "high",
+    "promptTriggers": {
+      "keywords": [
+        "your framework",
+        "framework name",
+        "key concepts"
+      ],
+      "intentPatterns": [
+        "create.*(component|route|feature)",
+        "add.*framework.*feature"
+      ]
+    },
+    "fileTriggers": {
+      "pathPatterns": [
+        "**/your-framework/**/*.ts",
+        "**/config.framework.js"
+      ],
+      "contentPatterns": [
+        "import.*from.*your-framework"
+      ]
+    }
+  }
+}
+```
+
+### Testing Your Kit
+
+1. **Test detection:**
+   ```bash
+   cd test-project
+   bash cli/kits/your-framework/kit.json # run detect command
+   ```
+
+2. **Test installation:**
+   ```bash
+   ./claude-setup
+   # Select your kit
+   # Verify files copied to .claude/
+   ```
+
+3. **Test auto-activation:**
+   - Use trigger keywords in prompts
+   - Edit files matching pathPatterns
+   - Verify skill activates
+
+### Submitting Your Kit
+
+1. Fork the repository
+2. Create your kit in `cli/kits/your-framework/`
+3. Test thoroughly
+4. Update this README's kit catalog
+5. Submit pull request with:
+   - Kit name and description
+   - What it covers
+   - Detection mechanism
+   - Example usage
 
 ---
 
 ## Repository Structure
 
 ```
-.claude/
-├── skills/                 # 5 production skills
-│   ├── backend-dev-guidelines/  (12 resource files)
-│   ├── frontend-dev-guidelines/ (11 resource files)
-│   ├── skill-developer/         (7 resource files)
-│   ├── route-tester/
-│   ├── error-tracking/
-│   └── skill-rules.json    # Skill activation configuration
-├── hooks/                  # 6 hooks for automation
-│   ├── skill-activation-prompt.*  (ESSENTIAL)
-│   ├── post-tool-use-tracker.sh   (ESSENTIAL)
-│   ├── tsc-check.sh        (optional, needs customization)
-│   └── trigger-build-resolver.sh  (optional)
-├── agents/                 # 10 specialized agents
-│   ├── code-architecture-reviewer.md
-│   ├── refactor-planner.md
-│   ├── frontend-error-fixer.md
-│   └── ... 7 more
-└── commands/               # 3 slash commands
-    ├── dev-docs.md
-    └── ...
-
-dev/
-└── active/                 # Dev docs pattern examples
-    └── public-infrastructure-repo/
+claude-code-kit/
+├── cli/
+│   ├── core/                    # Always installed
+│   │   ├── hooks/              # 6 hooks
+│   │   ├── agents/             # 6 agents
+│   │   ├── commands/           # 6 commands
+│   │   └── skills/
+│   │       └── skill-developer/  # Meta-skill
+│   └── kits/                    # Framework-specific (optional)
+│       ├── nextjs/
+│       ├── react/
+│       ├── shadcn/
+│       ├── tailwindcss/
+│       ├── mui/
+│       ├── tanstack-router/
+│       ├── tanstack-query/
+│       ├── express/
+│       ├── nodejs/
+│       └── prisma/
+├── claude-setup                 # Installation script
+├── package.json
+└── README.md
 ```
 
----
-
-## Component Catalog
-
-### 🎨 Skills (5)
-
-| Skill | Lines | Purpose | Best For |
-|-------|-------|---------|----------|
-| [**skill-developer**](.claude/skills/skill-developer/) | 426 | Creating and managing skills | Meta-development |
-| [**backend-dev-guidelines**](.claude/skills/backend-dev-guidelines/) | 304 | Express/Prisma/Sentry patterns | Backend APIs |
-| [**frontend-dev-guidelines**](.claude/skills/frontend-dev-guidelines/) | 398 | React/MUI v7/TypeScript | React frontends |
-| [**route-tester**](.claude/skills/route-tester/) | 389 | Testing authenticated routes | API testing |
-| [**error-tracking**](.claude/skills/error-tracking/) | ~250 | Sentry integration | Error monitoring |
-
-**All skills follow the modular pattern** - main file + resource files for progressive disclosure.
-
-**👉 [How to integrate skills →](.claude/skills/README.md)**
-
-### 🪝 Hooks (6)
-
-| Hook | Type | Essential? | Customization |
-|------|------|-----------|---------------|
-| skill-activation-prompt | UserPromptSubmit | ✅ YES | ✅ None needed |
-| post-tool-use-tracker | PostToolUse | ✅ YES | ✅ None needed |
-| tsc-check | Stop | ⚠️ Optional | ⚠️ Heavy - monorepo only |
-| trigger-build-resolver | Stop | ⚠️ Optional | ⚠️ Heavy - monorepo only |
-| error-handling-reminder | Stop | ⚠️ Optional | ⚠️ Moderate |
-| stop-build-check-enhanced | Stop | ⚠️ Optional | ⚠️ Moderate |
-
-**Start with the two essential hooks** - they enable skill auto-activation and work out of the box.
-
-**👉 [Hook setup guide →](.claude/hooks/README.md)**
-
-### 🤖 Agents (10)
-
-**Standalone - just copy and use!**
-
-| Agent | Purpose |
-|-------|---------|
-| code-architecture-reviewer | Review code for architectural consistency |
-| code-refactor-master | Plan and execute refactoring |
-| documentation-architect | Generate comprehensive documentation |
-| frontend-error-fixer | Debug frontend errors |
-| plan-reviewer | Review development plans |
-| refactor-planner | Create refactoring strategies |
-| web-research-specialist | Research technical issues online |
-| auth-route-tester | Test authenticated endpoints |
-| auth-route-debugger | Debug auth issues |
-| auto-error-resolver | Auto-fix TypeScript errors |
-
-**👉 [How agents work →](.claude/agents/README.md)**
-
-### 💬 Slash Commands (3)
-
-| Command | Purpose |
-|---------|---------|
-| /dev-docs | Create structured dev documentation |
-| /dev-docs-update | Update docs before context reset |
-| /route-research-for-testing | Research route patterns for testing |
+**Template vs Installation:**
+- `cli/` directory = **Template** (what gets copied)
+- User's `.claude/` = **Installation** (what they get)
 
 ---
 
-## Key Concepts
+## Updates
 
-### Hooks + skill-rules.json = Auto-Activation
+Re-run the installer to update or add kits:
 
-**The system:**
-1. **skill-activation-prompt hook** runs on every user prompt
-2. Checks **skill-rules.json** for trigger patterns
-3. Suggests relevant skills automatically
-4. Skills load only when needed
+```bash
+npx @blen/claude-code-kit
+```
 
-**This solves the #1 problem** with Claude Code skills: they don't activate on their own.
-
-### Progressive Disclosure (500-Line Rule)
-
-**Problem:** Large skills hit context limits
-
-**Solution:** Modular structure
-- Main SKILL.md <500 lines (overview + navigation)
-- Resource files <500 lines each (deep dives)
-- Claude loads incrementally as needed
-
-**Example:** backend-dev-guidelines has 12 resource files covering routing, controllers, services, repositories, testing, etc.
-
-### Dev Docs Pattern
-
-**Problem:** Context resets lose project context
-
-**Solution:** Three-file structure
-- `[task]-plan.md` - Strategic plan
-- `[task]-context.md` - Key decisions and files
-- `[task]-tasks.md` - Checklist format
-
-**Works with:** `/dev-docs` slash command to generate these automatically
-
----
-
-## ⚠️ Important: What Won't Work As-Is
-
-### settings.json
-The included `settings.json` is an **example only**:
-- Stop hooks reference specific monorepo structure
-- Service names (blog-api, etc.) are examples
-- MCP servers may not exist in your setup
-
-**To use it:**
-1. Extract ONLY UserPromptSubmit and PostToolUse hooks
-2. Customize or skip Stop hooks
-3. Update MCP server list for your setup
-
-### Blog Domain Examples
-Skills use generic blog examples (Post/Comment/User):
-- These are **teaching examples**, not requirements
-- Patterns work for any domain (e-commerce, SaaS, etc.)
-- Adapt the patterns to your business logic
-
-### Hook Directory Structures
-Some hooks expect specific structures:
-- `tsc-check.sh` expects service directories
-- Customize based on YOUR project layout
-
----
-
-## Integration Workflow
-
-**Recommended approach:**
-
-### Phase 1: Skill Activation (15 min)
-1. Copy skill-activation-prompt hook
-2. Copy post-tool-use-tracker hook
-3. Update settings.json
-4. Install hook dependencies
-
-### Phase 2: Add First Skill (10 min)
-1. Pick ONE relevant skill
-2. Copy skill directory
-3. Create/update skill-rules.json
-4. Customize path patterns
-
-### Phase 3: Test & Iterate (5 min)
-1. Edit a file - skill should activate
-2. Ask a question - skill should be suggested
-3. Add more skills as needed
-
-### Phase 4: Optional Enhancements
-- Add agents you find useful
-- Add slash commands
-- Customize Stop hooks (advanced)
-
----
-
-## Getting Help
-
-### For Users
-**Issues with integration?**
-1. Check [CLAUDE_INTEGRATION_GUIDE.md](CLAUDE_INTEGRATION_GUIDE.md)
-2. Ask Claude: "Why isn't [skill] activating?"
-3. Open an issue with your project structure
-
-### For Claude Code
-When helping users integrate:
-1. **Read CLAUDE_INTEGRATION_GUIDE.md FIRST**
-2. Ask about their project structure
-3. Customize, don't blindly copy
-4. Verify after integration
-
----
-
-## What This Solves
-
-### Before This Infrastructure
-
-❌ Skills don't activate automatically
-❌ Have to remember which skill to use
-❌ Large skills hit context limits
-❌ Context resets lose project knowledge
-❌ No consistency across development
-❌ Manual agent invocation every time
-
-### After This Infrastructure
-
-✅ Skills suggest themselves based on context
-✅ Hooks trigger skills at the right time
-✅ Modular skills stay under context limits
-✅ Dev docs preserve knowledge across resets
-✅ Consistent patterns via guardrails
-✅ Agents streamline complex tasks
-
----
-
-## Community
-
-**Found this useful?**
-
-- ⭐ Star this repo
-- 🐛 Report issues or suggest improvements
-- 💬 Share your own skills/hooks/agents
-- 📝 Contribute examples from your domain
-
-**Background:**
-This infrastructure was detailed in a post I made to Reddit ["Claude Code is a Beast – Tips from 6 Months of Hardcore Use"](https://www.reddit.com/r/ClaudeAI/comments/1oivjvm/claude_code_is_a_beast_tips_from_6_months_of/). After hundreds of requests, this showcase was created to help the community implement these patterns.
-
+The installer detects existing installations and offers:
+- Update existing kits to latest versions
+- Add new kits
+- Keep current setup
 
 ---
 
 ## License
 
-MIT License - Use freely in your projects, commercial or personal.
+MIT - See [LICENSE](LICENSE) for details.
 
 ---
 
-## Quick Links
+## Credits
 
-- 📖 [Claude Integration Guide](CLAUDE_INTEGRATION_GUIDE.md) - For AI-assisted setup
-- 🎨 [Skills Documentation](.claude/skills/README.md)
-- 🪝 [Hooks Setup](.claude/hooks/README.md)
-- 🤖 [Agents Guide](.claude/agents/README.md)
-- 📝 [Dev Docs Pattern](dev/README.md)
+Born from solving "skills don't activate automatically" problem.
 
-**Start here:** Copy the two essential hooks, add one skill, and see the auto-activation magic happen.
+**The Problem:** Claude Code skills just sat there. You had to remember to use them.
+
+**The Solution:** Auto-activation hooks + framework detection + skill-rules.json = Skills that activate when you need them.
+
+Available as a reference implementation for the community.
+
+---
+
+## Need Help?
+
+- **Installation issues:** Check detection commands in kit.json files
+- **Skills not activating:** Check `.claude/skills/skill-rules.json` was generated
+- **Framework not detected:** Create an issue or submit a kit!
+- **Contributing:** See [Contributing Kits](#contributing-kits) section above

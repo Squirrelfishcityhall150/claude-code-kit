@@ -1,0 +1,11 @@
+{
+  "name": "mui",
+  "displayName": "Material-UI",
+  "description": "MUI v7 component library patterns and sx prop styling",
+  "detect": {
+    "command": "grep -q '@mui/material' package.json"
+  },
+  "provides": {
+    "skills": ["mui"]
+  }
+}

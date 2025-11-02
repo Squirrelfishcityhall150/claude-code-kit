@@ -1,0 +1,11 @@
+{
+  "name": "tanstack-query",
+  "displayName": "TanStack Query",
+  "description": "TanStack Query v5 data fetching with useSuspenseQuery and mutations",
+  "detect": {
+    "command": "grep -q '@tanstack/react-query' package.json"
+  },
+  "provides": {
+    "skills": ["tanstack-query"]
+  }
+}

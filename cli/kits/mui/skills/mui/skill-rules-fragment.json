@@ -1,0 +1,38 @@
+{
+  "mui": {
+    "type": "domain",
+    "enforcement": "suggest",
+    "priority": "medium",
+    "promptTriggers": {
+      "keywords": [
+        "mui",
+        "material-ui",
+        "material ui",
+        "@mui/material",
+        "sx prop",
+        "theme",
+        "Box",
+        "Typography",
+        "Button"
+      ],
+      "intentPatterns": [
+        "style.*with.*mui",
+        "use.*mui.*component",
+        "create.*mui.*theme",
+        "customize.*mui"
+      ]
+    },
+    "fileTriggers": {
+      "pathPatterns": [
+        "**/*.styles.ts",
+        "**/*.styles.tsx"
+      ],
+      "contentPatterns": [
+        "import.*@mui/material",
+        "sx=\\{",
+        "<Box",
+        "<Typography"
+      ]
+    }
+  }
+}

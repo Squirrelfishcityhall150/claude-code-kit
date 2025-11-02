@@ -1,0 +1,34 @@
+{
+  "tanstack-router": {
+    "type": "domain",
+    "enforcement": "suggest",
+    "priority": "high",
+    "promptTriggers": {
+      "keywords": [
+        "tanstack router",
+        "createFileRoute",
+        "useNavigate",
+        "useParams",
+        "route loader",
+        "@tanstack/react-router"
+      ],
+      "intentPatterns": [
+        "create.*route",
+        "add.*route",
+        "implement.*navigation",
+        "create.*loader",
+        "add.*route.*parameter"
+      ]
+    },
+    "fileTriggers": {
+      "pathPatterns": [
+        "**/routes/**/*.tsx",
+        "**/routes/**/*.ts"
+      ],
+      "contentPatterns": [
+        "createFileRoute\\(",
+        "import.*@tanstack/react-router"
+      ]
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "react",
+  "displayName": "React",
+  "description": "Core React 18+ patterns including hooks, Suspense, lazy loading, and TypeScript",
+  "detect": {
+    "command": "grep -q '\"react\"' package.json"
+  },
+  "provides": {
+    "skills": ["react"]
+  }
+}

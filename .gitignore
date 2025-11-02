@@ -49,3 +49,4 @@ temp/
 # Prisma
 .env
 prisma/.env
+*.tgz

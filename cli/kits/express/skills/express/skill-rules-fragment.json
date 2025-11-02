@@ -1,0 +1,38 @@
+{
+  "express": {
+    "type": "domain",
+    "enforcement": "suggest",
+    "priority": "medium",
+    "promptTriggers": {
+      "keywords": [
+        "express",
+        "express.Router",
+        "app.get",
+        "app.post",
+        "middleware",
+        "req.body",
+        "res.json"
+      ],
+      "intentPatterns": [
+        "create.*express.*route",
+        "add.*express.*middleware",
+        "create.*api.*endpoint",
+        "implement.*controller"
+      ]
+    },
+    "fileTriggers": {
+      "pathPatterns": [
+        "**/routes/**/*.ts",
+        "**/controllers/**/*.ts",
+        "**/middleware/**/*.ts",
+        "**/app.ts",
+        "**/server.ts"
+      ],
+      "contentPatterns": [
+        "import.*express",
+        "Router\\(\\)",
+        "app\\.(get|post|put|delete)"
+      ]
+    }
+  }
+}
