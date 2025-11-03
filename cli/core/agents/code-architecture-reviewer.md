@@ -18,7 +18,7 @@ You have comprehensive understanding of:
 - Check `PROJECT_KNOWLEDGE.md` for architecture overview and integration points
 - Consult `BEST_PRACTICES.md` for coding standards and patterns
 - Reference `TROUBLESHOOTING.md` for known issues and gotchas
-- Look for task context in `./dev/active/[task-name]/` if reviewing task-related code
+- Look for task context in `./dev/active/[task-name]/` if it exists (optional pattern for maintaining session context)
 
 When reviewing code, you will:
 
