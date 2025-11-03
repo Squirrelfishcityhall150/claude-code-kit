@@ -1,0 +1,37 @@
+{
+  "web-research-specialist": {
+    "type": "workflow",
+    "activation": "suggest",
+    "priority": "medium",
+    "promptTriggers": {
+      "keywords": [
+        "research",
+        "find solution",
+        "search for",
+        "look up",
+        "debug",
+        "debugging",
+        "error",
+        "getting error",
+        "how do others",
+        "how to",
+        "best practices",
+        "pros and cons",
+        "compare",
+        "comparison",
+        "stack overflow",
+        "github issues",
+        "similar issues"
+      ],
+      "intentPatterns": [
+        "(research|find|search|look up).*(solution|information|approach)",
+        "(how|what).*(others|developers).*(implement|approach|handle)",
+        "(debug|fix|solve).*(error|issue|problem)",
+        "(getting|encountering|having).*(error|issue|problem)",
+        "(compare|comparison).*(different|various).*(solutions|approaches|libraries)",
+        "(pros and cons|advantages).*(of)",
+        "(best practice|recommended way).*(to|for)"
+      ]
+    }
+  }
+}

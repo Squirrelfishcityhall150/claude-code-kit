@@ -1,0 +1,33 @@
+{
+  "refactor-planner": {
+    "type": "workflow",
+    "activation": "suggest",
+    "priority": "high",
+    "promptTriggers": {
+      "keywords": [
+        "refactor",
+        "restructure",
+        "reorganize",
+        "improve code",
+        "modernize",
+        "code structure",
+        "better organization",
+        "technical debt",
+        "code smell",
+        "design patterns",
+        "getting large",
+        "getting complex",
+        "legacy code",
+        "messy code"
+      ],
+      "intentPatterns": [
+        "(refactor|restructure|reorganize).*(code|component|service|module)",
+        "improve.*(organization|structure|architecture)",
+        "(need|want).*(better|cleaner).*(organization|structure)",
+        "(code|component|file).*(is|getting).*(large|complex|messy)",
+        "(modernize|update).*(legacy|old).*(code|patterns)",
+        "(consolidate|deduplicate).*(code|logic|patterns)"
+      ]
+    }
+  }
+}

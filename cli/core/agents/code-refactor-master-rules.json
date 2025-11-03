@@ -1,0 +1,36 @@
+{
+  "code-refactor-master": {
+    "type": "workflow",
+    "activation": "suggest",
+    "priority": "medium",
+    "promptTriggers": {
+      "keywords": [
+        "reorganize",
+        "cleanup",
+        "clean up",
+        "is a mess",
+        "messy",
+        "break down",
+        "extract",
+        "split up",
+        "too large",
+        "too big",
+        "unmaintainable",
+        "hard to maintain",
+        "loading patterns",
+        "loading returns",
+        "file structure",
+        "move files",
+        "relocate"
+      ],
+      "intentPatterns": [
+        "(reorganize|cleanup|clean up).*(folder|directory|structure|components)",
+        "(folder|directory|component).*(is a mess|messy)",
+        "(break down|split|extract).*(large|big).*(component|file)",
+        "(file|component).*(too large|too big|over \\d+ lines)",
+        "(fix|replace).*(loading|early return).*(pattern|indicator)",
+        "(move|relocate).*(files|components)"
+      ]
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "plan-reviewer": {
+    "type": "workflow",
+    "activation": "suggest",
+    "priority": "medium",
+    "promptTriggers": {
+      "keywords": [
+        "review plan",
+        "review my plan",
+        "review this plan",
+        "check plan",
+        "check my plan",
+        "before implementation",
+        "before implementing",
+        "before i start",
+        "before proceeding",
+        "plan to",
+        "strategy for",
+        "approach for",
+        "migration plan",
+        "integration plan"
+      ],
+      "intentPatterns": [
+        "(review|check|validate).*(plan|strategy|approach)",
+        "(before).*(implementation|implementing|proceeding|starting)",
+        "here('s| is).*(plan|strategy|approach)",
+        "(migration|integration|refactoring).*(plan|strategy)",
+        "(want|need).*(to make sure|ensure|verify)",
+        "(haven't|might have).*(missed|overlooked)"
+      ]
+    }
+  }
+}
