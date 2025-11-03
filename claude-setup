@@ -24,6 +24,7 @@ NC='\033[0m' # No Color
 # Flags
 FORCE_MODE=false
 YES_MODE=false
+DEBUG_MODE=false
 
 # Parse arguments
 for arg in "$@"; do
@@ -36,6 +37,10 @@ for arg in "$@"; do
             YES_MODE=true
             shift
             ;;
+        --debug|-d)
+            DEBUG_MODE=true
+            shift
+            ;;
         --help|-h)
             echo "claude-setup v$VERSION"
             echo ""
@@ -45,6 +50,7 @@ for arg in "$@"; do
             echo "  claude-setup              Interactive mode with detection"
             echo "  claude-setup --force      Overwrite existing .claude directory"
             echo "  claude-setup --yes        Auto-detect, no prompts"
+            echo "  claude-setup --debug      Enable debug output for troubleshooting"
             echo "  claude-setup --help       Show this help"
             echo ""
             exit 0
@@ -140,6 +146,45 @@ if [ -d "$TEMPLATE_DIR/kits" ]; then
     done
 fi
 
+# Function to detect if this is a monorepo and get workspace patterns
+detect_monorepo() {
+    local workspace_paths=""
+
+    # 1. Check for pnpm-workspace.yaml (PRIMARY FIX for pnpm monorepos)
+    if [ -f pnpm-workspace.yaml ]; then
+        # Parse pnpm-workspace.yaml patterns
+        # Format: "  - 'pattern'" or "  - pattern"
+        workspace_paths=$(grep -E "^[[:space:]]*-[[:space:]]*" pnpm-workspace.yaml 2>/dev/null | \
+            sed -E "s/^[[:space:]]*-[[:space:]]*['\"]?([^'\"]+)['\"]?[[:space:]]*$/\1/" | \
+            tr '\n' ' ')
+
+    # 2. Check for Yarn/npm workspaces in package.json
+    elif [ -f package.json ] && grep -q '"workspaces"' package.json 2>/dev/null; then
+        workspace_paths=$(get_workspace_paths)
+
+    # 3. Check for lerna.json
+    elif [ -f lerna.json ]; then
+        if command -v jq &> /dev/null; then
+            workspace_paths=$(jq -r '.packages[]? // empty' lerna.json 2>/dev/null | tr '\n' ' ')
+        fi
+        # Lerna default if no packages specified
+        [ -z "$workspace_paths" ] && workspace_paths="packages/*"
+    fi
+
+    # Fallback: Check if common workspace directories exist
+    if [ -z "$workspace_paths" ]; then
+        local found_dirs=""
+        for dir in apps packages services libs modules tools; do
+            if [ -d "$dir" ] && [ -n "$(ls -A "$dir" 2>/dev/null)" ]; then
+                found_dirs="$found_dirs $dir/*"
+            fi
+        done
+        workspace_paths="$found_dirs"
+    fi
+
+    echo "$workspace_paths"
+}
+
 # Function to extract workspace paths from package.json
 get_workspace_paths() {
     local paths=""
@@ -174,16 +219,29 @@ get_workspace_paths() {
 # Function to run detection in root and monorepo subdirectories
 run_detection_multipath() {
     local detect_cmd="$1"
+    local debug="${DEBUG_MODE:-false}"
 
     # Fast path: Try root directory first (single-service projects)
+    if [ "$debug" = true ]; then
+        echo "  [DEBUG] Checking root directory..." >&2
+        echo "  [DEBUG] Running: $detect_cmd" >&2
+    fi
+
     if eval "$detect_cmd" 2>/dev/null; then
+        [ "$debug" = true ] && echo "  [DEBUG] ✓ Detected in root" >&2
         return 0
     fi
 
-    # Check if this is a monorepo (has workspaces configuration)
-    if [ -f package.json ] && grep -q '"workspaces"' package.json 2>/dev/null; then
-        # Get workspace paths (parsed from config or fallback patterns)
-        local workspace_paths=$(get_workspace_paths)
+    [ "$debug" = true ] && echo "  [DEBUG] ✗ Not found in root" >&2
+
+    # Check for monorepo configuration (pnpm, npm, yarn, lerna)
+    local workspace_paths=$(detect_monorepo)
+
+    if [ -n "$workspace_paths" ]; then
+        if [ "$debug" = true ]; then
+            echo "  [DEBUG] Monorepo detected" >&2
+            echo "  [DEBUG] Workspace paths: $workspace_paths" >&2
+        fi
 
         # Search each workspace path pattern
         for pattern in $workspace_paths; do
@@ -193,23 +251,46 @@ run_detection_multipath() {
             expanded_dirs=($pattern)
             shopt -u nullglob
 
+            [ "$debug" = true ] && echo "  [DEBUG] Checking pattern: $pattern" >&2
+
             # Iterate over expanded directories
             for subdir in "${expanded_dirs[@]}"; do
                 if [ -d "$subdir" ]; then
+                    if [ "$debug" = true ]; then
+                        echo "  [DEBUG] Checking: $subdir" >&2
+                        echo "  [DEBUG] Running in $subdir: $detect_cmd" >&2
+                    fi
+
                     # Run detection in subdirectory (use subshell to preserve cwd)
-                    (cd "$subdir" && eval "$detect_cmd" 2>/dev/null) && return 0
+                    if (cd "$subdir" && eval "$detect_cmd" 2>/dev/null); then
+                        [ "$debug" = true ] && echo "  [DEBUG] ✓ Detected in $subdir" >&2
+                        return 0
+                    fi
+
+                    [ "$debug" = true ] && echo "  [DEBUG] ✗ Not found in $subdir" >&2
                 fi
             done
         done
+    else
+        [ "$debug" = true ] && echo "  [DEBUG] No monorepo configuration detected" >&2
     fi
 
     return 1
 }
 
 # Detect which kits match the project
+if [ "$DEBUG_MODE" = true ]; then
+    echo -e "${YELLOW}[DEBUG MODE ENABLED]${NC}"
+    echo ""
+fi
+
 for kit_name in "${ALL_KITS[@]}"; do
     kit_dir="$TEMPLATE_DIR/kits/$kit_name"
     kit_json="$kit_dir/kit.json"
+
+    if [ "$DEBUG_MODE" = true ]; then
+        echo -e "${YELLOW}Checking kit: $kit_name${NC}"
+    fi
 
     if [ -f "$kit_json" ]; then
         # Extract detect command
@@ -227,9 +308,16 @@ for kit_name in "${ALL_KITS[@]}"; do
                 DETECTED_KITS+=("$kit_name")
                 display_name=$(get_display_name "$kit_dir")
                 echo -e "${GREEN}✓${NC} Detected: $display_name"
+            elif [ "$DEBUG_MODE" = true ]; then
+                display_name=$(get_display_name "$kit_dir")
+                echo -e "${RED}✗${NC} Not detected: $display_name"
             fi
+        elif [ "$DEBUG_MODE" = true ]; then
+            echo "  [DEBUG] No detect command found in kit.json"
         fi
     fi
+
+    [ "$DEBUG_MODE" = true ] && echo ""
 done
 
 if [ ${#DETECTED_KITS[@]} -eq 0 ]; then
