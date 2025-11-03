@@ -1,0 +1,34 @@
+{
+  "documentation-architect": {
+    "type": "workflow",
+    "activation": "suggest",
+    "priority": "medium",
+    "promptTriggers": {
+      "keywords": [
+        "document",
+        "documentation",
+        "create docs",
+        "write docs",
+        "readme",
+        "api docs",
+        "api documentation",
+        "data flow",
+        "architecture diagram",
+        "developer guide",
+        "document this",
+        "document the",
+        "needs documentation",
+        "needs docs",
+        "update docs",
+        "update documentation"
+      ],
+      "intentPatterns": [
+        "(create|write|update|enhance).*(documentation|docs|readme)",
+        "(document|explain).*(this|the).*(feature|system|api|flow)",
+        "(need|needs).*(documentation|docs)",
+        "(api|endpoint|feature).*(needs|requires).*(documentation|docs)",
+        "(data flow|architecture).*(diagram|documentation)"
+      ]
+    }
+  }
+}

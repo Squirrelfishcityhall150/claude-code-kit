@@ -1,0 +1,40 @@
+{
+  "code-architecture-reviewer": {
+    "type": "workflow",
+    "activation": "suggest",
+    "priority": "high",
+    "promptTriggers": {
+      "keywords": [
+        "review code",
+        "review my code",
+        "finished implementing",
+        "completed",
+        "done with",
+        "check my code",
+        "code review",
+        "review this",
+        "review the",
+        "added a new",
+        "created a new",
+        "implemented a new",
+        "finished the",
+        "completed the"
+      ],
+      "intentPatterns": [
+        "(review|check).*(code|implementation)",
+        "(finished|completed|done).*(implementing|building|creating|adding)",
+        "(finished|completed|done).*(component|feature|endpoint|service|function)",
+        "(added|created|implemented).*(new).*(component|endpoint|service|feature)",
+        "i('ve| have).*(finished|completed|added|created|implemented)",
+        "(refactored|updated).*(to use|with)"
+      ]
+    },
+    "postToolUseTriggers": {
+      "enabled": true,
+      "tools": ["Edit", "Write", "MultiEdit"],
+      "minEdits": 3,
+      "withinMinutes": 10,
+      "description": "Suggest code review after significant editing session"
+    }
+  }
+}

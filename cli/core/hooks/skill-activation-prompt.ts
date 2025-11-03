@@ -15,6 +15,14 @@ interface PromptTriggers {
     intentPatterns?: string[];
 }
 
+interface PostToolUseTriggers {
+    enabled: boolean;
+    tools: string[];
+    minEdits: number;
+    withinMinutes: number;
+    description?: string;
+}
+
 interface SkillRule {
     type: 'guardrail' | 'domain';
     enforcement: 'block' | 'suggest' | 'warn';
@@ -22,15 +30,30 @@ interface SkillRule {
     promptTriggers?: PromptTriggers;
 }
 
+interface AgentRule {
+    type: 'workflow';
+    activation: 'suggest' | 'auto';
+    priority: 'critical' | 'high' | 'medium' | 'low';
+    promptTriggers?: PromptTriggers;
+    postToolUseTriggers?: PostToolUseTriggers;
+}
+
 interface SkillRules {
     version: string;
     skills: Record<string, SkillRule>;
+    agents?: Record<string, AgentRule>;
 }
 
 interface MatchedSkill {
     name: string;
     matchType: 'keyword' | 'intent';
     config: SkillRule;
+}
+
+interface MatchedAgent {
+    name: string;
+    matchType: 'keyword' | 'intent';
+    config: AgentRule;
 }
 
 async function main() {
@@ -40,12 +63,13 @@ async function main() {
         const data: HookInput = JSON.parse(input);
         const prompt = data.prompt.toLowerCase();
 
-        // Load skill rules
+        // Load skill and agent rules
         const projectDir = process.env.CLAUDE_PROJECT_DIR || '$HOME/project';
         const rulesPath = join(projectDir, '.claude', 'skills', 'skill-rules.json');
         const rules: SkillRules = JSON.parse(readFileSync(rulesPath, 'utf-8'));
 
         const matchedSkills: MatchedSkill[] = [];
+        const matchedAgents: MatchedAgent[] = [];
 
         // Check each skill for matches
         for (const [skillName, config] of Object.entries(rules.skills)) {
@@ -77,8 +101,40 @@ async function main() {
             }
         }
 
+        // Check each agent for matches
+        if (rules.agents) {
+            for (const [agentName, config] of Object.entries(rules.agents)) {
+                const triggers = config.promptTriggers;
+                if (!triggers) {
+                    continue;
+                }
+
+                // Keyword matching
+                if (triggers.keywords) {
+                    const keywordMatch = triggers.keywords.some(kw =>
+                        prompt.includes(kw.toLowerCase())
+                    );
+                    if (keywordMatch) {
+                        matchedAgents.push({ name: agentName, matchType: 'keyword', config });
+                        continue;
+                    }
+                }
+
+                // Intent pattern matching
+                if (triggers.intentPatterns) {
+                    const intentMatch = triggers.intentPatterns.some(pattern => {
+                        const regex = new RegExp(pattern, 'i');
+                        return regex.test(prompt);
+                    });
+                    if (intentMatch) {
+                        matchedAgents.push({ name: agentName, matchType: 'intent', config });
+                    }
+                }
+            }
+        }
+
         // Generate output if matches found
-        if (matchedSkills.length > 0) {
+        if (matchedSkills.length > 0 || matchedAgents.length > 0) {
             let output = '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
             output += '🎯 SKILL ACTIVATION CHECK\n';
             output += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
@@ -113,7 +169,42 @@ async function main() {
                 output += '\n';
             }
 
-            output += 'ACTION: Use Skill tool BEFORE responding\n';
+            if (matchedSkills.length > 0) {
+                output += 'ACTION: Use Skill tool BEFORE responding\n';
+            }
+
+            if (matchedAgents.length > 0) {
+                output += '\n💡 RECOMMENDED AGENTS:\n';
+
+                // Group agents by priority
+                const criticalAgents = matchedAgents.filter(a => a.config.priority === 'critical');
+                const highAgents = matchedAgents.filter(a => a.config.priority === 'high');
+                const mediumAgents = matchedAgents.filter(a => a.config.priority === 'medium');
+                const lowAgents = matchedAgents.filter(a => a.config.priority === 'low');
+
+                if (criticalAgents.length > 0) {
+                    output += '⚠️ CRITICAL:\n';
+                    criticalAgents.forEach(a => output += `  → ${a.name}\n`);
+                }
+
+                if (highAgents.length > 0) {
+                    output += '🎯 HIGH PRIORITY:\n';
+                    highAgents.forEach(a => output += `  → ${a.name}\n`);
+                }
+
+                if (mediumAgents.length > 0) {
+                    output += '📋 SUGGESTED:\n';
+                    mediumAgents.forEach(a => output += `  → ${a.name}\n`);
+                }
+
+                if (lowAgents.length > 0) {
+                    output += '💭 OPTIONAL:\n';
+                    lowAgents.forEach(a => output += `  → ${a.name}\n`);
+                }
+
+                output += '\nACTION: Consider using Task tool with subagent_type=[agent-name] for complex tasks\n';
+            }
+
             output += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
 
             console.log(output);

@@ -12,7 +12,7 @@
 
 set -e  # Exit on error
 
-VERSION="0.2.0"
+VERSION="0.2.1"
 
 # Colors for output
 RED='\033[0;31m'
@@ -24,6 +24,7 @@ NC='\033[0m' # No Color
 # Flags
 FORCE_MODE=false
 YES_MODE=false
+DEBUG_MODE=false
 
 # Parse arguments
 for arg in "$@"; do
@@ -36,6 +37,10 @@ for arg in "$@"; do
             YES_MODE=true
             shift
             ;;
+        --debug|-d)
+            DEBUG_MODE=true
+            shift
+            ;;
         --help|-h)
             echo "claude-setup v$VERSION"
             echo ""
@@ -45,6 +50,7 @@ for arg in "$@"; do
             echo "  claude-setup              Interactive mode with detection"
             echo "  claude-setup --force      Overwrite existing .claude directory"
             echo "  claude-setup --yes        Auto-detect, no prompts"
+            echo "  claude-setup --debug      Enable debug output for troubleshooting"
             echo "  claude-setup --help       Show this help"
             echo ""
             exit 0
@@ -140,29 +146,178 @@ if [ -d "$TEMPLATE_DIR/kits" ]; then
     done
 fi
 
+# Function to detect if this is a monorepo and get workspace patterns
+detect_monorepo() {
+    local workspace_paths=""
+
+    # 1. Check for pnpm-workspace.yaml (PRIMARY FIX for pnpm monorepos)
+    if [ -f pnpm-workspace.yaml ]; then
+        # Parse pnpm-workspace.yaml patterns
+        # Format: "  - 'pattern'" or "  - pattern"
+        workspace_paths=$(grep -E "^[[:space:]]*-[[:space:]]*" pnpm-workspace.yaml 2>/dev/null | \
+            sed -E "s/^[[:space:]]*-[[:space:]]*['\"]?([^'\"]+)['\"]?[[:space:]]*$/\1/" | \
+            tr '\n' ' ')
+
+    # 2. Check for Yarn/npm workspaces in package.json
+    elif [ -f package.json ] && grep -q '"workspaces"' package.json 2>/dev/null; then
+        workspace_paths=$(get_workspace_paths)
+
+    # 3. Check for lerna.json
+    elif [ -f lerna.json ]; then
+        if command -v jq &> /dev/null; then
+            workspace_paths=$(jq -r '.packages[]? // empty' lerna.json 2>/dev/null | tr '\n' ' ')
+        fi
+        # Lerna default if no packages specified
+        [ -z "$workspace_paths" ] && workspace_paths="packages/*"
+    fi
+
+    # Fallback: Check if common workspace directories exist
+    if [ -z "$workspace_paths" ]; then
+        local found_dirs=""
+        for dir in apps packages services libs modules tools; do
+            if [ -d "$dir" ] && [ -n "$(ls -A "$dir" 2>/dev/null)" ]; then
+                found_dirs="$found_dirs $dir/*"
+            fi
+        done
+        workspace_paths="$found_dirs"
+    fi
+
+    echo "$workspace_paths"
+}
+
+# Function to extract workspace paths from package.json
+get_workspace_paths() {
+    local paths=""
+
+    # Try to use jq if available for accurate parsing
+    if command -v jq &> /dev/null; then
+        # Handle both array format: {"workspaces": ["apps/*"]}
+        # and object format: {"workspaces": {"packages": ["apps/*"]}}
+        paths=$(jq -r '
+            if .workspaces then
+                if (.workspaces | type) == "array" then
+                    .workspaces[]
+                elif (.workspaces | type) == "object" and .workspaces.packages then
+                    .workspaces.packages[]
+                else
+                    empty
+                end
+            else
+                empty
+            end
+        ' package.json 2>/dev/null)
+    fi
+
+    # Fallback: Use expanded common patterns if jq not available or no workspaces found
+    if [ -z "$paths" ]; then
+        paths="apps/* packages/* services/* libs/* modules/* tools/* internal/* components/*"
+    fi
+
+    echo "$paths"
+}
+
+# Function to run detection in root and monorepo subdirectories
+run_detection_multipath() {
+    local detect_cmd="$1"
+    local debug="${DEBUG_MODE:-false}"
+
+    # Fast path: Try root directory first (single-service projects)
+    if [ "$debug" = true ]; then
+        echo "  [DEBUG] Checking root directory..." >&2
+        echo "  [DEBUG] Running: $detect_cmd" >&2
+    fi
+
+    if eval "$detect_cmd" 2>/dev/null; then
+        [ "$debug" = true ] && echo "  [DEBUG] ✓ Detected in root" >&2
+        return 0
+    fi
+
+    [ "$debug" = true ] && echo "  [DEBUG] ✗ Not found in root" >&2
+
+    # Check for monorepo configuration (pnpm, npm, yarn, lerna)
+    local workspace_paths=$(detect_monorepo)
+
+    if [ -n "$workspace_paths" ]; then
+        if [ "$debug" = true ]; then
+            echo "  [DEBUG] Monorepo detected" >&2
+            echo "  [DEBUG] Workspace paths: $workspace_paths" >&2
+        fi
+
+        # Search each workspace path pattern
+        for pattern in $workspace_paths; do
+            # Enable nullglob to handle patterns with no matches gracefully
+            shopt -s nullglob
+            # Force glob expansion by assigning to array
+            expanded_dirs=($pattern)
+            shopt -u nullglob
+
+            [ "$debug" = true ] && echo "  [DEBUG] Checking pattern: $pattern" >&2
+
+            # Iterate over expanded directories
+            for subdir in "${expanded_dirs[@]}"; do
+                if [ -d "$subdir" ]; then
+                    if [ "$debug" = true ]; then
+                        echo "  [DEBUG] Checking: $subdir" >&2
+                        echo "  [DEBUG] Running in $subdir: $detect_cmd" >&2
+                    fi
+
+                    # Run detection in subdirectory (use subshell to preserve cwd)
+                    if (cd "$subdir" && eval "$detect_cmd" 2>/dev/null); then
+                        [ "$debug" = true ] && echo "  [DEBUG] ✓ Detected in $subdir" >&2
+                        return 0
+                    fi
+
+                    [ "$debug" = true ] && echo "  [DEBUG] ✗ Not found in $subdir" >&2
+                fi
+            done
+        done
+    else
+        [ "$debug" = true ] && echo "  [DEBUG] No monorepo configuration detected" >&2
+    fi
+
+    return 1
+}
+
 # Detect which kits match the project
+if [ "$DEBUG_MODE" = true ]; then
+    echo -e "${YELLOW}[DEBUG MODE ENABLED]${NC}"
+    echo ""
+fi
+
 for kit_name in "${ALL_KITS[@]}"; do
     kit_dir="$TEMPLATE_DIR/kits/$kit_name"
     kit_json="$kit_dir/kit.json"
+
+    if [ "$DEBUG_MODE" = true ]; then
+        echo -e "${YELLOW}Checking kit: $kit_name${NC}"
+    fi
 
     if [ -f "$kit_json" ]; then
         # Extract detect command
         if command -v jq &> /dev/null; then
             detect_cmd=$(jq -r '.detect.command // ""' "$kit_json" 2>/dev/null)
         else
-            # Fallback: simple grep extraction
-            detect_cmd=$(grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' "$kit_json" | sed 's/.*"\([^"]*\)".*/\1/' || echo "")
+            # Fallback: extract command field (less reliable, install jq for best results)
+            # Extract from opening quote to last quote on line, handling escaped quotes inside
+            detect_cmd=$(grep '"command"' "$kit_json" | sed -n 's/.*"command"[[:space:]]*:[[:space:]]*"\(.*\)"[^"]*$/\1/p' || echo "")
         fi
 
-        # Run detection command
+        # Run detection command (monorepo-aware)
         if [ -n "$detect_cmd" ]; then
-            if eval "$detect_cmd" 2>/dev/null; then
+            if run_detection_multipath "$detect_cmd"; then
                 DETECTED_KITS+=("$kit_name")
                 display_name=$(get_display_name "$kit_dir")
                 echo -e "${GREEN}✓${NC} Detected: $display_name"
+            elif [ "$DEBUG_MODE" = true ]; then
+                display_name=$(get_display_name "$kit_dir")
+                echo -e "${RED}✗${NC} Not detected: $display_name"
             fi
+        elif [ "$DEBUG_MODE" = true ]; then
+            echo "  [DEBUG] No detect command found in kit.json"
         fi
     fi
+
+    [ "$DEBUG_MODE" = true ] && echo ""
 done
 
 if [ ${#DETECTED_KITS[@]} -eq 0 ]; then
@@ -294,8 +449,12 @@ if [ ${#KITS_TO_INSTALL[@]} -eq 0 ]; then
     echo -e "${BLUE}No kits selected - core infrastructure only${NC}"
 fi
 
-# Step 7: Create settings.json
-cat > .claude/settings.json << 'EOF'
+# Step 7: Create or merge settings.json
+echo ""
+echo -e "${BLUE}Configuring Claude Code settings...${NC}"
+
+# Define new hooks configuration
+NEW_HOOKS_CONFIG=$(cat << 'HOOKEOF'
 {
   "hooks": {
     "UserPromptSubmit": [
@@ -318,24 +477,6 @@ cat > .claude/settings.json << 'EOF'
           }
         ]
       }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/tsc-check.sh"
-          },
-          {
-            "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/trigger-build-resolver.sh"
-          },
-          {
-            "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/error-handling-reminder.sh"
-          }
-        ]
-      }
     ]
   },
   "permissions": {
@@ -343,8 +484,107 @@ cat > .claude/settings.json << 'EOF'
     "writePermissions": "auto-accept"
   }
 }
-EOF
-echo -e "${GREEN}✓${NC} Created settings.json"
+HOOKEOF
+)
+
+if [ -f ".claude/settings.json" ]; then
+    echo -e "${YELLOW}Existing settings.json found - merging configurations${NC}"
+
+    if command -v jq &> /dev/null; then
+        # Backup existing settings
+        cp .claude/settings.json .claude/settings.json.backup
+
+        # Merge hooks using jq
+        # This preserves existing hooks and adds new ones if they don't exist
+        echo "$NEW_HOOKS_CONFIG" | jq -s '
+            .[0] as $existing |
+            .[1] as $new |
+            $existing |
+            .hooks.UserPromptSubmit = (
+                ($existing.hooks.UserPromptSubmit // []) +
+                ($new.hooks.UserPromptSubmit // [])
+            ) |
+            .hooks.PostToolUse = (
+                ($existing.hooks.PostToolUse // []) +
+                ($new.hooks.PostToolUse // [])
+            ) |
+            .permissions = ($existing.permissions // $new.permissions)
+        ' .claude/settings.json.backup - > .claude/settings.json
+
+        echo -e "${GREEN}✓${NC} Merged settings.json (backup saved as settings.json.backup)"
+    else
+        echo -e "${YELLOW}⚠${NC} jq not found - cannot merge settings.json"
+        echo "   Your existing settings.json was preserved"
+        echo "   You'll need to manually add the hooks from the installation"
+    fi
+else
+    # Create new settings.json
+    echo "$NEW_HOOKS_CONFIG" > .claude/settings.json
+    echo -e "${GREEN}✓${NC} Created settings.json"
+fi
+
+# Step 7b: Optional Stop hooks (for build checking)
+echo ""
+echo -e "${BLUE}Checking project structure for Stop hooks...${NC}"
+
+# Detect project type
+PACKAGE_JSON_COUNT=$(find . -maxdepth 3 -name "package.json" -not -path "*/node_modules/*" 2>/dev/null | wc -l | tr -d ' ')
+
+if [ "$PACKAGE_JSON_COUNT" -gt 3 ]; then
+    echo -e "${YELLOW}Detected monorepo structure ($PACKAGE_JSON_COUNT package.json files)${NC}"
+    echo ""
+    echo "Stop hooks can automatically check TypeScript compilation on save."
+    echo -e "${YELLOW}⚠  WARNING: Stop hooks require customization for your project structure${NC}"
+    echo "   - tsc-check.sh has hardcoded service names that need updating"
+    echo "   - See .claude/hooks/README.md and CONFIG.md for customization guide"
+    echo ""
+
+    if [ "$YES_MODE" = true ]; then
+        ENABLE_STOP_HOOKS="n"
+        echo "Skipping Stop hooks in --yes mode (requires manual configuration)"
+    else
+        read -p "Enable Stop hooks? (requires customization) [y/N]: " ENABLE_STOP_HOOKS
+    fi
+
+    if [[ "$ENABLE_STOP_HOOKS" =~ ^[Yy]$ ]]; then
+        echo -e "${BLUE}Adding Stop hooks to settings.json...${NC}"
+
+        if command -v jq &> /dev/null; then
+            # Add Stop hooks configuration
+            jq '.hooks.Stop = [
+              {
+                "hooks": [
+                  {
+                    "type": "command",
+                    "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/tsc-check.sh"
+                  },
+                  {
+                    "type": "command",
+                    "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/trigger-build-resolver.sh"
+                  },
+                  {
+                    "type": "command",
+                    "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/error-handling-reminder.sh"
+                  }
+                ]
+              }
+            ]' .claude/settings.json > .claude/settings.tmp.json
+            mv .claude/settings.tmp.json .claude/settings.json
+
+            echo -e "${GREEN}✓${NC} Stop hooks enabled"
+            echo -e "${YELLOW}⚠${NC} Remember to customize .claude/hooks/tsc-check.sh with your service names"
+            echo "   See .claude/hooks/CONFIG.md for instructions"
+        else
+            echo -e "${YELLOW}⚠${NC} jq not found - cannot add Stop hooks"
+        fi
+    else
+        echo -e "${BLUE}ℹ${NC} Skipped Stop hooks (you can add them later if needed)"
+    fi
+else
+    echo -e "${BLUE}Single-service project detected${NC}"
+    echo -e "${BLUE}ℹ${NC} Stop hooks not recommended for single-service projects"
+    echo "   (They are designed for monorepos with multiple services)"
+fi
 
 # Step 8: Create skill-rules.json
 # Start with base structure from skill-developer fragment
@@ -398,6 +638,97 @@ for kit in "${KITS_TO_INSTALL[@]}"; do
 done
 
 echo -e "${GREEN}✓${NC} Created skill-rules.json"
+
+# Step 8b: Merge agent-rules fragments from core agents
+echo ""
+echo -e "${BLUE}Merging agent activation rules...${NC}"
+
+# Add agents property to skill-rules.json if it doesn't exist
+if command -v jq &> /dev/null; then
+    # Check if agents property exists, if not add it
+    if ! jq -e '.agents' .claude/skills/skill-rules.json > /dev/null 2>&1; then
+        jq '. + {"agents": {}}' .claude/skills/skill-rules.json > .claude/skills/skill-rules.tmp.json
+        mv .claude/skills/skill-rules.tmp.json .claude/skills/skill-rules.json
+    fi
+
+    # Merge core agent rules
+    for agent_rules in "$TEMPLATE_DIR/core/agents/"*-rules.json; do
+        if [ -f "$agent_rules" ]; then
+            # Each agent-rules file contains {"agent-name": {...}}
+            jq -s '.[0] * {"agents": (.[0].agents + .[1])}' \
+                .claude/skills/skill-rules.json "$agent_rules" > .claude/skills/skill-rules.tmp.json
+            mv .claude/skills/skill-rules.tmp.json .claude/skills/skill-rules.json
+        fi
+    done
+
+    # Merge agent rules from installed kits
+    for kit in "${KITS_TO_INSTALL[@]}"; do
+        kit_dir="$TEMPLATE_DIR/kits/$kit"
+
+        # Look for agent-rules fragments in kit agent directories
+        if [ -d "$kit_dir/agents" ]; then
+            for agent_rules in "$kit_dir/agents/"*-rules.json; do
+                if [ -f "$agent_rules" ]; then
+                    jq -s '.[0] * {"agents": (.[0].agents + .[1])}' \
+                        .claude/skills/skill-rules.json "$agent_rules" > .claude/skills/skill-rules.tmp.json
+                    mv .claude/skills/skill-rules.tmp.json .claude/skills/skill-rules.json
+                fi
+            done
+        fi
+    done
+
+    echo -e "${GREEN}✓${NC} Merged agent activation rules"
+else
+    echo -e "${YELLOW}⚠${NC} jq not found - skipping agent-rules merge"
+    echo "   Agent auto-activation will not work without jq"
+fi
+
+# Step 8c: Validate generated JSON files
+echo ""
+echo -e "${BLUE}Validating configuration files...${NC}"
+
+VALIDATION_FAILED=false
+
+# Validate settings.json
+if [ -f ".claude/settings.json" ]; then
+    if command -v jq &> /dev/null; then
+        if jq empty .claude/settings.json 2>/dev/null; then
+            echo -e "${GREEN}✓${NC} settings.json is valid"
+        else
+            echo -e "${RED}✗${NC} settings.json is invalid JSON"
+            VALIDATION_FAILED=true
+        fi
+    else
+        echo -e "${YELLOW}⚠${NC} Cannot validate settings.json (jq not found)"
+    fi
+else
+    echo -e "${RED}✗${NC} settings.json not found"
+    VALIDATION_FAILED=true
+fi
+
+# Validate skill-rules.json
+if [ -f ".claude/skills/skill-rules.json" ]; then
+    if command -v jq &> /dev/null; then
+        if jq empty .claude/skills/skill-rules.json 2>/dev/null; then
+            echo -e "${GREEN}✓${NC} skill-rules.json is valid"
+        else
+            echo -e "${RED}✗${NC} skill-rules.json is invalid JSON"
+            VALIDATION_FAILED=true
+        fi
+    else
+        echo -e "${YELLOW}⚠${NC} Cannot validate skill-rules.json (jq not found)"
+    fi
+else
+    echo -e "${RED}✗${NC} skill-rules.json not found"
+    VALIDATION_FAILED=true
+fi
+
+if [ "$VALIDATION_FAILED" = true ]; then
+    echo ""
+    echo -e "${RED}✗${NC} Installation completed with validation errors"
+    echo "   Check the files above for JSON syntax issues"
+    exit 1
+fi
 
 # Step 9: Install hook dependencies
 echo ""

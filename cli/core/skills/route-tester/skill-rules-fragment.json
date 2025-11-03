@@ -1,0 +1,35 @@
+{
+  "route-tester": {
+    "type": "domain",
+    "enforcement": "suggest",
+    "priority": "medium",
+    "promptTriggers": {
+      "keywords": [
+        "test route",
+        "test routes",
+        "test api",
+        "test endpoint",
+        "test endpoints",
+        "api testing",
+        "route testing",
+        "endpoint testing",
+        "test authentication",
+        "test auth",
+        "integration test",
+        "integration testing",
+        "api test",
+        "http test",
+        "rest test",
+        "test request",
+        "test response"
+      ],
+      "intentPatterns": [
+        "test.*(route|endpoint|api)",
+        "(route|endpoint|api).*test",
+        "(test|testing).*(authentication|auth)",
+        "(integration|e2e).*(test|testing).*(api|route|endpoint)",
+        "write.*(test|tests).*(api|route|endpoint)"
+      ]
+    }
+  }
+}
