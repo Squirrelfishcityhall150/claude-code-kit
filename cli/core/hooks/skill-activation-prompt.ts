@@ -202,7 +202,14 @@ async function main() {
                     lowAgents.forEach(a => output += `  → ${a.name}\n`);
                 }
 
-                output += '\nACTION: Consider using Task tool with subagent_type=[agent-name] for complex tasks\n';
+                // Output strong activation instruction with actual agent names
+                const highPriorityAgents = [...criticalAgents, ...highAgents];
+                if (highPriorityAgents.length > 0) {
+                    const agentNames = highPriorityAgents.map(a => a.name).join(' or ');
+                    output += `\nACTION: Use Task tool with subagent_type=${highPriorityAgents[0].name} BEFORE responding\n`;
+                } else if (mediumAgents.length > 0) {
+                    output += `\nACTION: Consider using Task tool with subagent_type=${mediumAgents[0].name}\n`;
+                }
             }
 
             output += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
